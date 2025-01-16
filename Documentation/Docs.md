@@ -7,9 +7,9 @@ This is folder is where you can find the API documentation for hardware used in 
 <H2> Links </H2>
 
 <h3> Prior </h3>
+- [API Documentation](/Documentation/Prior/Prior%20Scientific%20SDK.pdf)
+- [Examples and Documentation Download](https://www.prior.com/technical-support/downloads/software)
 
-[API Documentation](/Documentation/Prior/Prior%20Scientific%20SDK.pdf)
-[Examples and Documentation Download](https://www.prior.com/technical-support/downloads/software)
 
 <h3> Thorlabs </h3>
 
