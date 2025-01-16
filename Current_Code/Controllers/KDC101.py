@@ -1,5 +1,6 @@
 """
-Created on Wed Aug 19 02:42:31 2020
+Created: Aug 19 2020
+Updated: Jan XX 2025
 
 @authors: Kaifei Kang, Brandon Bauer
 
@@ -7,9 +8,7 @@ Created on Wed Aug 19 02:42:31 2020
 
 import sys
 import clr
-#import ctypes
 import numpy as np
-#import time
 
 #TODO: Change to stored DLLs so we do not need Kinesis installed
 sys.path.append(r"..\DLLs\Thorlabs")
