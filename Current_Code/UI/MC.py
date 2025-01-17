@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Jan 24 15:05:31 2020
 Do not copy or modify without permission of the author!!!
@@ -10,22 +9,27 @@ import sys
 from PyQt5.QtCore import QThread
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtCore import QObject,pyqtSignal
+
+# needs to be reimported if we want to use it this way
 import prior_driver
 import KDC101
 import numpy as np
-import time
-import ctypes
-import ctypes.util
 
 import Settings.Serial_Numbers as SN
 
+# One is a z motor and another is something else idk
 SM = KDC101.Motor(SN.SN_KDC101)
+
+# appears to not exist anywhere else
 #RM = KDC101.Motor(SN.SN_KDC101)
 
 pr = prior_driver.prior()
 
+#mm k whats this buddy
 path = sys.path[0]
+
 MC_GUI = path + r'\MC.ui'
+
 Ui_MainWindow, QtBaseClass = uic.loadUiType(MC_GUI)
 
 class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.QMessageBox,QtWidgets.QInputDialog):
@@ -100,8 +104,6 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         except:
             pass
         
-        
-        
     def steppingSX(self):
         try:
             stepsize=self.stepSizeX.text()
@@ -120,8 +122,7 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
             self.show_pos()
         except:
             pass
-        
-        
+         
     def steppingY(self):
         try:
             stepsize=self.stepSizeY.text()
@@ -154,8 +155,6 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         SM.jog_up()
         self.show_pos()        
         
-        
-        
     def steppingXN(self):
         try:
             stepsize='-'+self.stepSizeX.text()
@@ -174,6 +173,7 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
             self.show_pos()
         except:
             pass
+
     def steppingYN(self):
         try:
             stepsize='-'+self.stepSizeY.text()
@@ -208,8 +208,6 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         SM.set_jog_step(stepsize)
         SM.jog_down()
         self.show_pos()
-
-
         
     def set_start(self):
         self.PL.setText(pr.get_P())
@@ -225,12 +223,10 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         
     def abort_map(self):
         self.map_XY.stop_map()
-        
-        
+             
     def save_point(self):
         ad=pr.get_value('P')
         self.coordList.addItem(pr.get_P())
-
         
     def move_to_saved(self):
         
@@ -239,7 +235,6 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         pr.move_Y(coord[1])
         pr.move_Z(coord[2])
         
-    
     def move_X(self):
         Xpos=self.absX.text()
         pr.move_X(Xpos)
@@ -269,8 +264,7 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
             self.absZ.setText(str(posz))
         except Exception as error:
             print(error)
-#            pass
-#    
+   
     def refresh_pos(self):
         
         if SM.motor_state()==1:
@@ -279,7 +273,6 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         if SM.motor_state()==0:
             self.label_8.setText('Motor stopped moving!')
             self.show_pos()
-    
     
     def mapping(self):
         

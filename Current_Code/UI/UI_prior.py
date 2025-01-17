@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Jan 24 15:05:31 2020
 Do not copy or modify without permission of the author!!!
@@ -13,9 +12,6 @@ from PyQt5.QtCore import QObject,pyqtSignal
 import prior_driver
 import KDC101, M30XY
 import numpy as np
-import time
-import ctypes
-import ctypes.util
 
 import Settings.Serial_Numbers as SN
 
@@ -101,15 +97,6 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         
         self.RABS.clicked.connect(self.moveR)
         
-
-        
-#        p1=self.PL.text().split(',')
-#        p2=self.PR.text().split(',')
-#        xstep=self.stepSizeX.text()
-#        ystep=self.stepSizeY.text()
-#        waittime=self.waitTime.value()
-#        self.map_XY=Map(p1,p2,xstep,ystep,-0.03,0.07,waittime)
-        
     def steppingX(self):
         try:
             stepsize=self.MX_step.value()
@@ -141,8 +128,7 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         SXY.set_jog_step(channel, stepsize)
         SXY.jog_up(channel)
         self.show_pos()
-        
-        
+          
     def steppingZ(self):
         
         stepsize = float(self.SZS_step.value())*1e-3
@@ -156,9 +142,7 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         SZ.set_jog_step(stepsize)
         SZ.jog_up()
         self.show_pos()        
-        
-        
-        
+             
     def steppingXN(self):
         
         try:
@@ -167,7 +151,6 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
             self.show_pos()
         except:
             pass
-        
         
     def steppingYN(self):
         
@@ -194,7 +177,6 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         SXY.set_jog_step(channel, stepsize)
         SXY.jog_down(channel)
         self.show_pos()
-
 
     def steppingZN(self):
         
@@ -245,14 +227,11 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
         RM.move_to(float(r_target))   
         self.show_pos()
 
-
     def focus_up(self):
         Focus.jog_up()
 
-
     def focus_down(self):
-        Focus.jog_down()
-        
+        Focus.jog_down() 
         
     def show_pos(self):
         
@@ -287,7 +266,7 @@ class main(QtWidgets.QMainWindow, Ui_MainWindow,QtWidgets.QFileDialog,QtWidgets.
             
         except Exception as error:
             print(error)
-#            pass
+
 
 
             
@@ -297,8 +276,5 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication([])
     window = main()    
     window.show()
-    
-#    timer = QtCore.QTimer()
-#    timer.timeout.connect(window.refresh_pos)
-#    timer.start(250)   
+       
     sys.exit(app.exec_())
