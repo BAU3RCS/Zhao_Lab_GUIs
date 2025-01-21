@@ -6,7 +6,7 @@ This is folder is where you can find the API documentation for hardware used in 
 
 <H2> Links </H2>
 
-- [Python Requirements File](/requirements.txt)
+- [Python Requirements File](/Documentation/requirements.txt)
 
 <h3> Prior </h3>
 
