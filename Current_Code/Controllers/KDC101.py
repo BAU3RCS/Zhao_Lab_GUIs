@@ -9,10 +9,14 @@ import sys
 import clr
 import time
 
+clr.AddReference("System")
+import System
+
 sys.path.append(r"DLLs\Thorlabs")
 
-clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI")
 clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI")
+clr.AddReference("ThorLabs.MotionControl.GenericMotorCLI")
 
 # Further informatom under Classes: Thorlabs > MotionControl > kcube > DCServoCLI > KCubeDCServo
 # Click List of All Members !!
@@ -21,10 +25,6 @@ from Thorlabs.MotionControl.DeviceManagerCLI import *
 from Thorlabs.MotionControl.KCube.DCServoCLI import *
 # This is where the MotorDirection Enum is stored!!!
 from Thorlabs.MotionControl.GenericMotorCLI  import*
-
-
-clr.AddReference("System")
-import System
 
 
 #TODO: fix try-except blocks for proper behavoir
@@ -45,7 +45,7 @@ class Kcube():
         self.motor      = motor
         self.controller = KCubeDCServo.CreateKCubeDCServo(self.ser)
         
-        # TODO: We might not immediately want to connect to the device.... ?
+        # Note: We might not immediately want to connect to the device.... ?
         self.connect()
  
     def connect(self):
@@ -97,19 +97,25 @@ class Kcube():
         Input: None
         Output: None
         """
-        self.controller.EnableDevice()
-        
+        try:
+            self.controller.EnableDevice()
+        except Exception as error:
+            sys.exit(error)
+            
     def disable(self):
         """
         Disables the controller. The controller will not respond to commands.
         Input: None
         Output: None
         """
-        self.controller.DisableDevice()
+        try:
+            self.controller.DisableDevice()
+        except Exception as error:
+            sys.exit(error)
     
     def jog_forward(self, timeout):
         """
-        This jogs the controller in the forward, and will error if not completed within the user
+        This jogs the controller in the forward direction, and will error if not completed within the user
         specified timeout in miliseconds.
         Input: Timeout in miliseconds.
         Output: The position after command.
@@ -123,7 +129,7 @@ class Kcube():
             
     def jog_backward(self, timeout):
         """
-        This jogs the controller in the forward, and will error if not completed within the user
+        This jogs the controller in the backward direction, and will error if not completed within the user
         specified timeout in miliseconds. 
         Input: Timeout in miliseconds.
         Output: The position after command.
@@ -138,8 +144,8 @@ class Kcube():
     def move_to(self, position, timeout):
         """
         This moves the controller to the specific target position relative to home in milimeters.
-        The move must be compeleted in time_limit, which is in miliseconds.
-        Input: The position to move to in milimeters.
+        The move must be compeleted in the timeout specified, which is in miliseconds.
+        Input: The position to move to in milimeters, timeout in ms.
         Ouput: The position after.
         """
     
@@ -150,7 +156,7 @@ class Kcube():
         
         return self.pos()
     
-    def set_velocity_params(self, max_velocity = 2.2, acceleration = 1.5):
+    def set_velocity_params(self, max_velocity = 2.2, acceleration = 1.5):  
         """
         This sets the motors velocity parameters. Defaulted to company startup values, 2.2 mm/s and 1.5 mm/s^2 respectively.
         Input: Velocity in mm/s and Acceleration in  mm/s^2.
@@ -164,7 +170,7 @@ class Kcube():
     def set_jog_velocity_params(self, max_velocity = 2, acceleration = 2):
         """
         Sets the jog parameters of the controller/motor. Defaulted to company startup values of 2 mm/s and 2 mm/s^2 respectively.
-        Input: Max velocity in mm/s, and acceleration in mm/s^2
+        Input: Max velocity in mm/s, and acceleration in mm/s^2.
         Output: None.
         """
         max_velocity  = System.Decimal(max_velocity)
@@ -172,23 +178,25 @@ class Kcube():
         
         self.controller.SetJogVelocityParams(max_velocity, acceleration)
 
-    def set_jog_step(self,step_size = 0.1):
+    def set_jog_step(self, step_size = 0.1):
         """
         Sets the jog step size of the controller/motor. Defaulted to the company startup value of 0.1 milimeters.
         Input: Step size in milimeters.
         Output: None.
         """
-        step_size = System.Decimal(step_size) 
+        step_size = System.Decimal(step_size)
+         
         self.controller.SetJogStepSize(step_size)
 
-    def set_backlash(self,lash = 0.3):
+    def set_backlash(self, backlash = 0.3):
         """
         This sets the back lash of the controller/motor. Defaulted to the company startup value of 0.3 milimeters.
         Input: Backlash in milimeters
         Output: None.
         """
-        lash = System.Decimal(lash)
-        self.controller.SetBacklash(lash)
+        backlash = System.Decimal(backlash)
+        
+        self.controller.SetBacklash(backlash)
 
     def get_pos(self):
         """
