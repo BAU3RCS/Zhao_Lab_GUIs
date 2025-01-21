@@ -99,6 +99,9 @@ class Kcube():
         """
         try:
             self.controller.EnableDevice()
+            # Wait for device to be ready for command
+            time.sleep(0.5)
+            
         except Exception as error:
             sys.exit(error)
             
@@ -125,7 +128,7 @@ class Kcube():
         except Exception as error:
             sys.exit(error)
             
-        return self.pos()
+        return self.get_pos()
             
     def jog_backward(self, timeout):
         """
@@ -135,11 +138,11 @@ class Kcube():
         Output: The position after command.
         """
         try:
-            self.controller.MoveJog(MotionDirection.Backward,timeout)     
+            self.controller.MoveJog(MotorDirection.Backward,timeout)     
         except Exception as error:
             print(error)
             
-        return self.pos() 
+        return self.get_pos() 
     
     def move_to(self, position, timeout):
         """
@@ -154,7 +157,7 @@ class Kcube():
         except Exception as error:
             sys.exit(error)
         
-        return self.pos()
+        return self.get_pos()
     
     def set_velocity_params(self, max_velocity = 2.2, acceleration = 1.5):  
         """
@@ -167,26 +170,45 @@ class Kcube():
 
         self.controller.SetVelocityParams(max_velocity, acceleration)
     
-    def set_jog_velocity_params(self, max_velocity = 2, acceleration = 2):
+    def get_velocity_params(self):
         """
-        Sets the jog parameters of the controller/motor. Defaulted to company startup values of 2 mm/s and 2 mm/s^2 respectively.
-        Input: Max velocity in mm/s, and acceleration in mm/s^2.
+        Returns the velocicty parameters max_velocity in mm/s and accleration in mm/s^2 in a tuple
+        Input: None.
+        Output: A tuple containing max_velocity in mm/s and acceleration in mm/s^2.
+        """
+        params           = self.controller.GetVelocityParams()
+        max_velocity     = float(str(params.MaxVelocity))
+        acceleration     = float(str(params.Acceleration))
+        
+        return (max_velocity, acceleration)
+    
+    def set_jog_velocity_params(self, step_size = 0.1 ,max_velocity = 2, acceleration = 2):
+        """
+        Sets the jog parameters of the controller/motor.
+        Defaulted to company startup values of 0.1 milimeters, 2 mm/s, and 2 mm/s^2 respectively.
+        Input: Step size in milimeters, max velocity in mm/s, and acceleration in mm/s^2.
         Output: None.
         """
         max_velocity  = System.Decimal(max_velocity)
         acceleration  = System.Decimal(acceleration)
+        step_size     = System.Decimal(step_size)
         
+        self.controller.SetJogStepSize(step_size)
         self.controller.SetJogVelocityParams(max_velocity, acceleration)
 
-    def set_jog_step(self, step_size = 0.1):
+    def get_jog_params(self):
         """
-        Sets the jog step size of the controller/motor. Defaulted to the company startup value of 0.1 milimeters.
-        Input: Step size in milimeters.
-        Output: None.
+        Returns the jog parameters: step size in mm, max velocity in mm/s, and acceleration in mm/s^2 as a tuple.
+        Input: None.
+        Output: A tuple containing step_size in mm, max_velocity in mm/s, acceleration in mm/s^2.
         """
-        step_size = System.Decimal(step_size)
-         
-        self.controller.SetJogStepSize(step_size)
+        step_size        = float(str(self.controller.GetJogStepSize()))
+        
+        params           = self.controller.GetJogParams().VelocityParams
+        max_velocity     = float(str(params.MaxVelocity))
+        acceleration     = float(str(params.Acceleration))
+    
+        return (step_size, max_velocity, acceleration)
 
     def set_backlash(self, backlash = 0.3):
         """
@@ -198,13 +220,23 @@ class Kcube():
         
         self.controller.SetBacklash(backlash)
 
+    def get_backlash(self):
+        """
+        Returns the backlash of the motor/controller in milimeters.
+        Input: None.
+        Output: Backlash in mm.
+        """
+        backlash = float(str(self.controller.GetBacklash()))
+
+        return backlash
+    
     def get_pos(self):
         """
         Returns the position of the motor in milimeters.
         Input: None
         Output: Position of the motor in milimeters.
         """
-        return float(self.controller.Position)
+        return float(str(self.controller.Position))
         
     def get_state(self):
         """
@@ -213,26 +245,6 @@ class Kcube():
         Output: State of controller/motor.
         """
         return self.controller.State
-
-    def get_jog_params(self):
-        """
-        Returns the jog parameters: step size in mm, max velocity in mm/s, and acceleration in mm/s^2 as a tuple.
-        Input: None.
-        Output: A tuple containing step_size in mm, max_velocity in mm/s, acceleration in mm/s^2.
-        """
-        step_size        = self.controller.GetJogStepSize()
-        max_velocity     = self.controller.GetJogVelocityParams()[0]
-        acceleration     = self.controller.GetJogVelocityParams()[1]
-    
-        return (step_size, max_velocity, acceleration)
-    
-    def get_vel_params(self):
-        """
-        Returns the velocicty parameters max_velocity in mm/s and accleration in mm/s^2 in a tuple
-        Input: None.
-        Output: A tuple containing max_velocity in mm/s and acceleration in mm/s^2.
-        """
-        return self.controller.GetVelocityParams()
 
     def disconnect(self):
         """

@@ -70,17 +70,17 @@ class M30XY():
         # Channels correspond to a specific motion direction or motor controller
         # Here we have x and y.
         try:
-            self.mx = self.stage.GetChannel(1)
+            self.channels["x"] = self.stage.GetChannel(1)
         except Exception as error:
             sys.exit(error)
             
         try:
-            self.my = self.stage.GetChannel(2)
+            self.channels["y"] = self.stage.GetChannel(2)
         except Exception as error:
             sys.exit(error)
         
-        self._initialize_channel(self.mx)
-        self._initialize_channel(self.my)
+        self._initialize_channel(self.channels["x"])
+        self._initialize_channel(self.channels["y"])
         
     def _initialize_channel(self, channel):
         """
@@ -91,7 +91,7 @@ class M30XY():
         # Wait for channel to initialize settings
         if not channel.IsSettingsInitialized():
                 try:
-                    self.controller.WaitForSettingsInitialized(100)
+                    channel.WaitForSettingsInitialized(100)
                     
                 except Exception as error:
                     sys.exit(error)
@@ -113,7 +113,7 @@ class M30XY():
     def home(self, channel, timeout):
         """
         This homes the controller and will error if the controller does not complete homing within the given time limit (in miliseconds).
-        Inputs: Channel("x", "y", "xy"), Timeout in ms.
+        Inputs: Channel("x", "y"), Timeout in ms.
         Outputs: None.
         """
         try:
@@ -121,26 +121,28 @@ class M30XY():
         except Exception as error:
             sys.exit(error)
 
-    # TODO: Can you enable and disable the whole stage?
     def enable(self, channel):
         """
         Enables the stage to respond to commands.
-        Input: Channel ("x", "y", "xy")
+        Input: Channel ("x", "y")
         Output: None
         """
         try:
             self.channels[channel].EnableDevice()
+            # Wait for device to be ready for command
+            time.sleep(0.5)
+            
         except Exception as error:
             sys.exit(error)
     
     def disable(self, channel):
         """
         Disables the controller. The controller will not respond to commands.
-        Input: Channel to be disabled ("x", "y", "xy")
+        Input: Channel to be disabled ("x", "y")
         Output: None
         """
         try:
-            channel.DisableDevice()
+            self.channels[channel].DisableDevice()
         except Exception as error:
             sys.exit(error)
     
@@ -156,7 +158,7 @@ class M30XY():
         except Exception as error:
             sys.exit(error)
             
-        return self.pos()
+        return self.get_pos(channel)
     
     def jog_backward(self, channel, timeout):
         """
@@ -170,7 +172,7 @@ class M30XY():
         except Exception as error:
             sys.exit(error)
             
-        return self.pos()
+        return self.get_pos(channel)
    
     def move_to(self, channel, position, timeout):
         """
@@ -185,94 +187,100 @@ class M30XY():
         except Exception as error:
             sys.exit(error)
         
-        return self.pos()
+        return self.get_pos(channel)
     
-    #TODO: Check the max velocity parm defaults
-    # See if the command is per channel or stage
-    def set_velocity_params(self, channel,max_velocity = 2.2, acceleration = 1.5):
+    def set_velocity_params(self, channel,max_velocity = 2.3, acceleration = 5.0):
         """
-        This sets the motors velocity parameters. Defaulted to company startup values, 2.2 mm/s and 1.5 mm/s^2 respectively.
-        Input: Channel ("x", "y", "xy"),velocity in mm/s, acceleration in  mm/s^2.
+        This sets the motors velocity parameters. Defaulted to company startup values, 2.3 mm/s and 5.0 mm/s^2 respectively.
+        Input: Channel ("x", "y"),velocity in mm/s, acceleration in  mm/s^2.
         Output: None.
         """
         acceleration = System.Decimal(acceleration)
         max_velocity = System.Decimal(max_velocity)
 
         self.channels[channel].SetVelocityParams(max_velocity, acceleration)
-
-    def set_jog_velocity_params(self, channel, max_velocity = 2, acceleration = 2):
+        
+    def get_velocity_params(self, channel):
         """
-        Sets the jog parameters of the controller/motor. Defaulted to company startup values of 2 mm/s and 2 mm/s^2 respectively.
-        Input: Channel ("x", "y", "xy"), max velocity in mm/s, and acceleration in mm/s^2.
+        Returns the velocicty parameters max_velocity in mm/s and accleration in mm/s^2 in a tuple
+        Input: Channel ("x", "y").
+        Output: A tuple containing max_velocity in mm/s and acceleration in mm/s^2.
+        """
+        params           = self.channels[channel].GetVelocityParams()
+        max_velocity     = float(str(params.MaxVelocity))
+        acceleration     = float(str(params.Acceleration))
+    
+        return (max_velocity, acceleration)
+
+    def set_jog_velocity_params(self, channel, step_size = 0.5, max_velocity = 2.6, acceleration = 4.0):
+        """
+        Sets the jog parameters (step size, max velocity, acceleration) of the controller/motor.
+        Defaulted to company startup values of 0.5 milimeters, 2.6 mm/s, and 4.0 mm/s^2 respectively.
+        Input: Channel ("x", "y"), step size in milimeters, max velocity in mm/s, and acceleration in mm/s^2.
         Output: None.
         """
         max_velocity  = System.Decimal(max_velocity)
         acceleration  = System.Decimal(acceleration)
-        
-        self.channels[channel].SetJogVelocityParams(max_velocity, acceleration)
-
-    def set_jog_step(self, channel, step_size = 0.1):
-        """
-        Sets the jog step size of the controller/motor. Defaulted to the company startup value of 0.1 milimeters.
-        Input: Channel ("x", "y", "xy"), Step size in milimeters.
-        Output: None.
-        """
         step_size = System.Decimal(step_size) 
         
         self.channels[channel].SetJogStepSize(step_size)
+        self.channels[channel].SetJogVelocityParams(max_velocity, acceleration)
         
-    def set_backlash(self, channel, backlash = 0.3):
+    def get_jog_params(self, channel):
+        """
+        Returns the jog parameters: step size in mm, max velocity in mm/s, and acceleration in mm/s^2 as a tuple.
+        Input: Channel ("x", "y").
+        Output: A tuple containing step_size in mm, max_velocity in mm/s, acceleration in mm/s^2.
+        """
+        step_size        = float(str(self.channels[channel].GetJogStepSize()))
+        
+        params           = self.channels[channel].GetJogParams().VelocityParams
+        max_velocity     = float(str(params.MaxVelocity))
+        acceleration     = float(str(params.Acceleration))
+    
+        return (step_size, max_velocity, acceleration)
+        
+    def set_backlash(self, channel, backlash = 0):
         """
         This sets the back lash of the controller/motor. Defaulted to the company startup value of 0.3 milimeters.
-        Input: channel ("x", "y", "xy") and backlash in milimeters.
+        Input: channel ("x", "y") and backlash in milimeters.
         Output: None.
         """
         backlash = System.Decimal(backlash)
         
         self.channels[channel].SetBacklash(backlash)
 
+    def get_backlash(self, channel):
+        """
+        Returns the backlash of the given channel in milimeters.
+        Input: Channel ("x", "y").
+        Output: Backlash in mm.
+        """
+        backlash = float(str(self.channels[channel].GetBacklash()))
+    
+        return backlash
+
     def get_pos(self, channel):
         """
         Returns the position of the motor in milimeters.
-        Input: Channel ("x", "y", "xy").
+        Input: Channel ("x", "y").
         Output: Position of the motor in milimeters.
         """
         
-        return float(self.channels[channel].Position)
+        return float(str(self.channels[channel].Position))
         
     def get_state(self, channel):
         """
         Returns the state of the controller/motor.
-        Input: Channel ("x", "y", "xy").
+        Input: Channel ("x", "y").
         Output: State of controller/motor.
         """
         return self.channels[channel].State
 
-    #TODO: Check how things work with channels I'm guessing just one
-    def get_jog_params(self, channel):
-        """
-        Returns the jog parameters: step size in mm, max velocity in mm/s, and acceleration in mm/s^2 as a tuple.
-        Input: Channel ("x", "y", "xy").
-        Output: A tuple containing step_size in mm, max_velocity in mm/s, acceleration in mm/s^2.
-        """
-        step_size        = self.channels[channel].GetJogStepSize()
-        max_velocity     = self.channels[channel].GetJogVelocityParams()[0]
-        acceleration     = self.channels[channel].GetJogVelocityParams()[1]
-    
-        return (step_size, max_velocity, acceleration)
-    
-    def get_vel_params(self, channel):
-        """
-        Returns the velocicty parameters max_velocity in mm/s and accleration in mm/s^2 in a tuple
-        Input: Channel ("x", "y", "xy").
-        Output: A tuple containing max_velocity in mm/s and acceleration in mm/s^2.
-        """
-        return self.channels[channel].GetVelocityParams()
-
     def disconnect(self, channel):
         """
         Properly disconnects and shutsdown the controller/motor.
-        Input: Channel ("x", "y", "xy").
+        Input: Channel ("x", "y").
         Ouutput: None.
         """
         self.channels[channel].DisconnectTidyUp()
