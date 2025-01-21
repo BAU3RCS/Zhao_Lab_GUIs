@@ -116,33 +116,44 @@ class Kcube():
         except Exception as error:
             sys.exit(error)
     
-    def jog_forward(self, timeout):
+    def jog(self, direction, timeout):
         """
         This jogs the controller in the forward direction, and will error if not completed within the user
         specified timeout in miliseconds.
-        Input: Timeout in miliseconds.
+        Input: Direction ("Forward", "Backward") and timeout in miliseconds.
         Output: The position after command.
         """
         try:
-            self.controller.MoveJog(MotorDirection.Forward,timeout)
+            if direction == "Forward":
+                self.controller.MoveJog(MotorDirection.Forward, timeout)
+            elif direction == "Backward":
+                self.controller.MoveJog(MotorDirection.Backward, timeout)
+            else:
+                raise Exception("Direction not defined")
+            
         except Exception as error:
             sys.exit(error)
             
-        return self.get_pos()
-            
-    def jog_backward(self, timeout):
+        return self.get_pos() 
+    
+    def move_continuous(self,direction):
         """
-        This jogs the controller in the backward direction, and will error if not completed within the user
-        specified timeout in miliseconds. 
-        Input: Timeout in miliseconds.
+        Continuously jogs the motor in given direction.
+        Input: Direction ("Forward", "Backward").
         Output: The position after command.
         """
         try:
-            self.controller.MoveJog(MotorDirection.Backward,timeout)     
-        except Exception as error:
-            print(error)
+            if direction == "Forward":
+                self.controller.MoveContinuous(MotorDirection.Forward)
+            elif direction == "Backward":
+                self.controller.MoveContinuous(MotorDirection.Backward)
+            else:
+                raise Exception("Direction not defined")
             
-        return self.get_pos() 
+        except Exception as error:
+            sys.exit(error)
+        
+        return self.get_pos()
     
     def move_to(self, position, timeout):
         """

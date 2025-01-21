@@ -146,21 +146,45 @@ class M30XY():
         except Exception as error:
             sys.exit(error)
     
-    def jog_forward(self, channel, timeout):
+    
+    def jog(self, channel, direction, timeout):
         """
-        This jogs the controller in the forward direction, and will error if not completed within the user
+        This jogs the channel motor in the forward direction, and will error if not completed within the user
         specified timeout in miliseconds.
-        Input: Channel ("x", "y"), timeout in miliseconds.
+        Input: Channel ("x", "y"), direction ("Forward", "Backward") and timeout in miliseconds.
         Output: The position after command.
         """
         try:
-            self.channels[channel].MoveJog(MotorDirection.Forward,timeout)
+            if direction == "Forward":
+                self.channels[channel].MoveJog(MotorDirection.Forward, timeout)
+            elif direction == "Backward":
+                self.channels[channel].MoveJog(MotorDirection.Backward, timeout)
+            else:
+                raise Exception("Direction not defined")
+            
         except Exception as error:
             sys.exit(error)
             
-        return self.get_pos(channel)
+        return self.get_pos(channel) 
     
-    def jog_backward(self, channel, timeout):
+    def move_continuous(self, channel, direction):
+        """
+        Continuously jogs the channel motor in given direction.
+        Input: Channel ("x", "y"), direction ("Forward", "Backward").
+        Output: The position after command.
+        """
+        try:
+            if direction == "Forward":
+                self.channels[channel].MoveContinuous(MotorDirection.Forward)
+            elif direction == "Backward":
+                self.channels[channel].MoveContinuous(MotorDirection.Backward)
+            else:
+                raise Exception("Direction not defined")
+            
+        except Exception as error:
+            sys.exit(error)
+        
+        return self.get_pos(channel)
         """
         This jogs the controller in the backward direction, and will error if not completed within the user
         specified timeout in miliseconds.
