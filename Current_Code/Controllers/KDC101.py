@@ -26,12 +26,6 @@ from Thorlabs.MotionControl.KCube.DCServoCLI import *
 # This is where the MotorDirection Enum is stored!!!
 from Thorlabs.MotionControl.GenericMotorCLI  import*
 
-
-#TODO: fix try-except blocks for proper behavoir
-# Add automatic serial number ?
-# Do we want immediate stop
-# Do we want to add other commands, lets go over that with Zhao
-
 class Kcube():
     def __init__(self, serial_number, motor):
         # Build device list to access controller
