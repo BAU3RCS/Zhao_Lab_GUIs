@@ -1,175 +1,267 @@
 """
 Created: Aug 19 2020
-Updated: Jan XX 2025
+Updated: Jan 17 2025
 
 @authors: Kaifei Kang, Brandon Bauer
 
 """ 
-
 import sys
 import clr
-import numpy as np
-
-#TODO: Change to stored DLLs so we do not need Kinesis installed
-sys.path.append(r"..\DLLs\Thorlabs")
+import time
 
 clr.AddReference("System")
-clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI")
+import System
+
+sys.path.append(r"DLLs\Thorlabs")
+
 clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
-
-#TODO: Don't think I need this
-#clr.AddReference("Thorlabs.MotionControl.KCube.DCServoUI")
-
+clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI")
+clr.AddReference("ThorLabs.MotionControl.GenericMotorCLI")
 
 # Further informatom under Classes: Thorlabs > MotionControl > kcube > DCServoCLI > KCubeDCServo
 # Click List of All Members !!
 
 from Thorlabs.MotionControl.DeviceManagerCLI import *
 from Thorlabs.MotionControl.KCube.DCServoCLI import *
-
 # This is where the MotorDirection Enum is stored!!!
 from Thorlabs.MotionControl.GenericMotorCLI  import*
 
-#TODO: Need to see if this is needed, TEST IT
-#from Thorlabs.MotionControl.KCube.DCServoUI import *
-
-import System
 
 #TODO: fix try-except blocks for proper behavoir
+# Add automatic serial number ?
+# Do we want immediate stop
+# Do we want to add other commands, lets go over that with Zhao
 
-class Motor():
-    
-    #TODO: Need to fix and setup device initilization properly, follow example in documentation
-    def __init__(self,ser):
-        DeviceManagerCLI.BuildDeviceList()
+class Kcube():
+    def __init__(self, serial_number, motor):
+        # Build device list to access controller
+        try:
+            DeviceManagerCLI.BuildDeviceList()
+        except Exception as error:
+            sys.exit(error)
         
-        # This should not be needed but I'm not quite sure yet so I'm leaving this
-        #DeviceManagerCLI.GetDeviceList()
+        # Create and set variables
+        self.ser        = serial_number
+        self.motor      = motor
+        self.controller = KCubeDCServo.CreateKCubeDCServo(self.ser)
         
-        self.ser   = ser
-        self.motor = KCubeDCServo.CreateKCubeDCServo(self.ser)
-        self.polling_time = 250
+        # Note: We might not immediately want to connect to the device.... ?
         self.connect()
  
     def connect(self):
+        """
+        This connects to the controller via its serial number and configures it to work with the given motor.
+        Inputs: None.
+        Outputs: None.
+        """
+        # Start the connection with the controller and wait for it to initialize.
+        self.controller.Connect(self.ser)
+        if not self.controller.IsSettingsInitialized():
+                try:
+                    self.controller.WaitForSettingsInitialized(100)
+                    
+                except Exception as error:
+                    sys.exit(error)
+                    
+        # Polls the device every 250ms for status
+        self.controller.StartPolling(250)
+        # Wait 500ms to gaurentee first update is recieved
+        time.sleep(0.5)
         
-        self.motor.Connect(self.ser)
-        self.motor.WaitForSettingsInitialized(50000)
-        self.motor.GetMotorConfiguration(self.ser,DeviceConfiguration.DeviceSettingsUseOptionType.UseFileSettings)
-        self.motor.StartPolling(self.polling_time)
-        self.motor.EnableDevice()
+        # Enables device, otherwise commands are ignored
+        self.controller.EnableDevice()
+        time.sleep(0.5)
         
-        #TODO: Remove and add this settings to the proper spot
-#        self.set_jog_params()
-#        self.set_vel_params()
-#        self.set_jog_step(0.001)
-        
+        # Call LoadMotorConfiguration on the device to initialize the DeviceUnitConverter object required for real world unit parameters
+        # loads configuration information into channel
+        motorConfiguration = self.controller.LoadMotorConfiguration(self.ser)
+        motorConfiguration.DeviceSettingsName = self.motor
+
+        # Get the device unit converter
+        motorConfiguration.UpdateCurrentConfiguration() 
     
-    
-    def home(self,time_limit):
+    def home(self, timeout):
         """
-        This home the motor and will error if the motor does not complete homing within the given time limit (in miliseconds).
-        """
-        self.motor.Home(time_limit)
-        
-    def jog_forward(self,timeout):
-        """
-        This jogs the motor in the forward, and will error if not completed within the user
-        specified timeout in miliseconds.
-        Input: timeout(ms)
-        Return: position after running.
+        This homes the controller and will error if the controller does not complete homing within the given time limit (in miliseconds).
+        Inputs: Timeout in ms.
+        Outputs: None.
         """
         try:
-            self.motor.MoveJog(MotorDirection.Forward,timeout)
-            return self.pos()
+            self.controller.Home(timeout)
         except Exception as error:
-            print(error)
+            sys.exit(error)
+        
+    def enable(self):
+        """
+        Enables the controller to respond to commands.
+        Input: None
+        Output: None
+        """
+        try:
+            self.controller.EnableDevice()
+            # Wait for device to be ready for command
+            time.sleep(0.5)
             
-    
-    def jog_backward(self,timeout):
+        except Exception as error:
+            sys.exit(error)
+            
+    def disable(self):
         """
-        This jogs the motor in the forward, and will error if not completed within the user
-        specified timeout in miliseconds. 
-        Input: timeout(ms)
-        Return: position after running.
+        Disables the controller. The controller will not respond to commands.
+        Input: None
+        Output: None
         """
         try:
-            self.motor.MoveJog(MotionDirection.Backward,timeout)
-            return self.pos()      
+            self.controller.DisableDevice()
         except Exception as error:
-            print(error)
+            sys.exit(error)
     
-    def move_to(self,target,timeout):
+    def jog(self, direction, timeout):
         """
-        This moves the motor to the specific target position relative to home in milimeters.
-        The move must be compeleted in time_limit, which is in miliseconds.
+        This jogs the controller in the forward direction, and will error if not completed within the user
+        specified timeout in miliseconds.
+        Input: Direction ("Forward", "Backward") and timeout in miliseconds.
+        Output: The position after command.
         """
-        
-        # Why is this being done? I think this needs to be a parameter to allow the time to complete properly
-        # timewait=self.polling_time
-        print(target)
         try:
-            self.motor.MoveTo(System.Decimal(target),time_limit)
+            if direction == "Forward":
+                self.controller.MoveJog(MotorDirection.Forward, timeout)
+            elif direction == "Backward":
+                self.controller.MoveJog(MotorDirection.Backward, timeout)
+            else:
+                raise Exception("Direction not defined")
+            
         except Exception as error:
-            print(error)
-        
-        return self.pos()
+            sys.exit(error)
+            
+        return self.get_pos() 
     
-    def set_vel_params(self, acc = 1, maxv = 10):
+    def move_continuous(self,direction):
+        """
+        Continuously jogs the motor in given direction.
+        Input: Direction ("Forward", "Backward").
+        Output: The position after command.
+        """
+        try:
+            if direction == "Forward":
+                self.controller.MoveContinuous(MotorDirection.Forward)
+            elif direction == "Backward":
+                self.controller.MoveContinuous(MotorDirection.Backward)
+            else:
+                raise Exception("Direction not defined")
+            
+        except Exception as error:
+            sys.exit(error)
         
-        acc=System.Decimal(acc)
-        maxv=System.Decimal(maxv)
-
-        self.motor.SetVelocityParams(acc, maxv)
+        return self.get_pos()
     
-    def set_jog_params(self,vel=0.1,accl=1,stp_mode=1):
+    def move_to(self, position, timeout):
+        """
+        This moves the controller to the specific target position relative to home in milimeters.
+        The move must be compeleted in the timeout specified, which is in miliseconds.
+        Input: The position to move to in milimeters, timeout in ms.
+        Ouput: The position after.
+        """
+    
+        try:
+            self.controller.MoveTo(System.Decimal(position),timeout)
+        except Exception as error:
+            sys.exit(error)
         
-        vel=System.Decimal(vel)
-        accl=System.Decimal(accl)
-        new_pa=self.motor.GetJogParams()
-        new_pa.StopMode= 1
-        self.motor.SetJogParams(new_pa)
-        self.motor.SetJogVelocityParams(vel,accl)
+        return self.get_pos()
+    
+    def set_velocity_params(self, max_velocity = 2.2, acceleration = 1.5):  
+        """
+        This sets the motors velocity parameters. Defaulted to company startup values, 2.2 mm/s and 1.5 mm/s^2 respectively.
+        Input: Velocity in mm/s and Acceleration in  mm/s^2.
+        Output: None.
+        """
+        acceleration = System.Decimal(acceleration)
+        max_velocity = System.Decimal(max_velocity)
 
-    def set_jog_step(self,step):
-        step=((step)*1)
-        print(step)
-	
-        return self.motor.SetJogStepSize(System.Decimal(step))
-
-    def set_backlash(self,lash):
-        self.motor.SetBacklash(System.Decimal(lash))
-
-    def pos(self):
-        return float(str(self.motor.Position))
+        self.controller.SetVelocityParams(max_velocity, acceleration)
+    
+    def get_velocity_params(self):
+        """
+        Returns the velocicty parameters max_velocity in mm/s and accleration in mm/s^2 in a tuple
+        Input: None.
+        Output: A tuple containing max_velocity in mm/s and acceleration in mm/s^2.
+        """
+        params           = self.controller.GetVelocityParams()
+        max_velocity     = float(str(params.MaxVelocity))
+        acceleration     = float(str(params.Acceleration))
         
-    def motor_state(self):
-        state=self.motor.State
-        return state
+        return (max_velocity, acceleration)
+    
+    def set_jog_velocity_params(self, step_size = 0.1 ,max_velocity = 2, acceleration = 2):
+        """
+        Sets the jog parameters of the controller/motor.
+        Defaulted to company startup values of 0.1 milimeters, 2 mm/s, and 2 mm/s^2 respectively.
+        Input: Step size in milimeters, max velocity in mm/s, and acceleration in mm/s^2.
+        Output: None.
+        """
+        max_velocity  = System.Decimal(max_velocity)
+        acceleration  = System.Decimal(acceleration)
+        step_size     = System.Decimal(step_size)
+        
+        self.controller.SetJogStepSize(step_size)
+        self.controller.SetJogVelocityParams(max_velocity, acceleration)
 
     def get_jog_params(self):
+        """
+        Returns the jog parameters: step size in mm, max velocity in mm/s, and acceleration in mm/s^2 as a tuple.
+        Input: None.
+        Output: A tuple containing step_size in mm, max_velocity in mm/s, acceleration in mm/s^2.
+        """
+        step_size        = float(str(self.controller.GetJogStepSize()))
         
-        vel=self.motor.GetJogVelocityParams()[0]
-        accl=self.motor.GetJogVelocityParams()[1]
-        stop_mode=self.motor.GetJogParams().StopMode
-        return(vel,accl,stop_mode)
+        params           = self.controller.GetJogParams().VelocityParams
+        max_velocity     = float(str(params.MaxVelocity))
+        acceleration     = float(str(params.Acceleration))
     
-    def get_vel_params(self):
-        return self.motor.GetVelocityParams()
+        return (step_size, max_velocity, acceleration)
+
+    def set_backlash(self, backlash = 0.3):
+        """
+        This sets the back lash of the controller/motor. Defaulted to the company startup value of 0.3 milimeters.
+        Input: Backlash in milimeters
+        Output: None.
+        """
+        backlash = System.Decimal(backlash)
+        
+        self.controller.SetBacklash(backlash)
+
+    def get_backlash(self):
+        """
+        Returns the backlash of the motor/controller in milimeters.
+        Input: None.
+        Output: Backlash in mm.
+        """
+        backlash = float(str(self.controller.GetBacklash()))
+
+        return backlash
+    
+    def get_pos(self):
+        """
+        Returns the position of the motor in milimeters.
+        Input: None
+        Output: Position of the motor in milimeters.
+        """
+        return float(str(self.controller.Position))
+        
+    def get_state(self):
+        """
+        Returns the state of the controller/motor.
+        Input: None.
+        Output: State of controller/motor.
+        """
+        return self.controller.State
 
     def disconnect(self):
-        self.motor.ShutDown()
-        
-    def callables(self):
         """
-        This method prints all the callable members of the motor object.
-        crtl-f to find one you are looking for.
+        Properly disconnects and shutsdown the controller/motor.
+        Input: None.
+        Ouutput: None.
         """
-        all_members = dir(self.motor)
-        # Filter to get only callable members (methods)
-        methods = [member for member in all_members if callable(getattr(self.motor, member))]
-
-        print(methods)
-
-#if len(d_list)>0:
-#    m=Motor(d_list[2])
+        self.controller.DisconnectTidyUp()
+        self.controller.ShutDown()
