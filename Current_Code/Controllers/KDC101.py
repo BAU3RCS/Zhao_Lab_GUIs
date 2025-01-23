@@ -1,6 +1,6 @@
 """
 Created: Aug 19 2020
-Updated: Jan 17 2025
+Updated: Jan 2025
 
 @authors: Kaifei Kang, Brandon Bauer
 
@@ -10,7 +10,7 @@ import clr
 import time
 
 clr.AddReference("System")
-import System
+import System # type: ignore
 
 sys.path.append(r"DLLs\Thorlabs")
 
@@ -21,23 +21,23 @@ clr.AddReference("ThorLabs.MotionControl.GenericMotorCLI")
 # Further informatom under Classes: Thorlabs > MotionControl > kcube > DCServoCLI > KCubeDCServo
 # Click List of All Members !!
 
-from Thorlabs.MotionControl.DeviceManagerCLI import *
-from Thorlabs.MotionControl.KCube.DCServoCLI import *
+from Thorlabs.MotionControl.DeviceManagerCLI import * # type: ignore
+from Thorlabs.MotionControl.KCube.DCServoCLI import * # type: ignore
 # This is where the MotorDirection Enum is stored!!!
-from Thorlabs.MotionControl.GenericMotorCLI  import*
+from Thorlabs.MotionControl.GenericMotorCLI  import* # type: ignore
 
 class Kcube():
     def __init__(self, serial_number, motor):
         # Build device list to access controller
         try:
-            DeviceManagerCLI.BuildDeviceList()
+            DeviceManagerCLI.BuildDeviceList() # type: ignore
         except Exception as error:
             sys.exit(error)
         
         # Create and set variables
         self.ser        = serial_number
         self.motor      = motor
-        self.controller = KCubeDCServo.CreateKCubeDCServo(self.ser)
+        self.controller = KCubeDCServo.CreateKCubeDCServo(self.ser) # type: ignore
         
         # Note: We might not immediately want to connect to the device.... ?
         self.connect()
@@ -119,9 +119,9 @@ class Kcube():
         """
         try:
             if direction == "Forward":
-                self.controller.MoveJog(MotorDirection.Forward, timeout)
+                self.controller.MoveJog(MotorDirection.Forward, timeout) # type: ignore
             elif direction == "Backward":
-                self.controller.MoveJog(MotorDirection.Backward, timeout)
+                self.controller.MoveJog(MotorDirection.Backward, timeout) # type: ignore
             else:
                 raise Exception("Direction not defined")
             
@@ -138,9 +138,9 @@ class Kcube():
         """
         try:
             if direction == "Forward":
-                self.controller.MoveContinuous(MotorDirection.Forward)
+                self.controller.MoveContinuous(MotorDirection.Forward) # type: ignore
             elif direction == "Backward":
-                self.controller.MoveContinuous(MotorDirection.Backward)
+                self.controller.MoveContinuous(MotorDirection.Backward) # type: ignore
             else:
                 raise Exception("Direction not defined")
             

@@ -6,6 +6,10 @@ This is folder is where you can find the API documentation for hardware used in 
 
 <H2> Links </H2>
 
+- How to use Git
+- - [Github Git Documentation](https://docs.github.com/en/get-started/using-git)
+- - [Alternative Documentation and Guides](https://ohshitgit.com/)
+
 - [Python Requirements File](/Documentation/requirements.txt)
 
 <h3> Prior </h3>

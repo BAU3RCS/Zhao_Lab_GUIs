@@ -1,17 +1,17 @@
 """
-Created on Wed Aug 19 02:42:31 2020
+Created: Aug 19 2020
+Updated: Jan 2025
 
-@author: Kaifei Kang
+@authors: Kaifei Kang, Brandon Bauer
 
-
-"""
+""" 
 
 import sys
 import clr
 import time
 
 clr.AddReference("System")
-import System
+import System # type: ignore
 
 sys.path.append(r"DLLs\Thorlabs")
 
@@ -24,16 +24,16 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 # Note that we must do things by channel here. Ie. I do not think we can call a command that will work on both motors... which
 # doesn't make sense in many situations anyways.
 
-from Thorlabs.MotionControl.DeviceManagerCLI import *
-from Thorlabs.MotionControl.Benchtop.DCServoCLI import *
-from Thorlabs.MotionControl.GenericMotorCLI import *
+from Thorlabs.MotionControl.DeviceManagerCLI import * # type: ignore
+from Thorlabs.MotionControl.Benchtop.DCServoCLI import * # type: ignore
+from Thorlabs.MotionControl.GenericMotorCLI import * # type: ignore
 
 
 class M30XY():
     def __init__(self,serial_number):
         # Build device list to access controller
         try:
-            DeviceManagerCLI.BuildDeviceList()
+            DeviceManagerCLI.BuildDeviceList() # type: ignore
         except Exception as error:
             sys.exit(error)
         
@@ -41,7 +41,7 @@ class M30XY():
         self.ser   = serial_number
         self.mx    = None
         self.my    = None
-        self.stage = BenchtopDCServo.CreateBenchtopDCServo(self.ser)
+        self.stage = BenchtopDCServo.CreateBenchtopDCServo(self.ser) # type: ignore
         
         # This allows us to just use keys to reference the channels later instead of needing the channel object
         # outside of the class.
@@ -156,9 +156,9 @@ class M30XY():
         """
         try:
             if direction == "Forward":
-                self.channels[channel].MoveJog(MotorDirection.Forward, timeout)
+                self.channels[channel].MoveJog(MotorDirection.Forward, timeout) # type: ignore
             elif direction == "Backward":
-                self.channels[channel].MoveJog(MotorDirection.Backward, timeout)
+                self.channels[channel].MoveJog(MotorDirection.Backward, timeout) # type: ignore
             else:
                 raise Exception("Direction not defined")
             
@@ -175,9 +175,9 @@ class M30XY():
         """
         try:
             if direction == "Forward":
-                self.channels[channel].MoveContinuous(MotorDirection.Forward)
+                self.channels[channel].MoveContinuous(MotorDirection.Forward) # type: ignore
             elif direction == "Backward":
-                self.channels[channel].MoveContinuous(MotorDirection.Backward)
+                self.channels[channel].MoveContinuous(MotorDirection.Backward) # type: ignore
             else:
                 raise Exception("Direction not defined")
             
