@@ -6,6 +6,10 @@ updated:
 Store and change program parameters here.
 """
 
+# Motors
+Z_motor = "Z925B"
+
+
 # Motor Serial Numbers
 
 SN_M30XY  = "101472454"
