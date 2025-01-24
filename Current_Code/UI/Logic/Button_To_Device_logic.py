@@ -24,7 +24,7 @@ from Controllers.KDC101 import Kcube
 from Controllers.M30XY import M30XY
 # to be implemented later when the codes combine
 #from Controllers.prior_driver import prior
-import random
+
 
 class device_commands():
     """
@@ -52,7 +52,10 @@ class device_commands():
     def y_set_step_size(self, lineedit:QLineEdit):
         self.M30XY.set_jog_velocity_params("y", step_size = float(lineedit.text))
         
-    def x_set_step_size(self, lineedit:QLineEdit):
+    """
+    This is now just a helper function for the step buttons in 
+    """
+    def z_set_step_size(self, lineedit:QLineEdit):
         self.KDC.set_jog_velocity_params(step_size = float(lineedit.text))
     
 #       endregion
@@ -60,56 +63,68 @@ class device_commands():
 #       Step Buttons
 #       region
     def x_stepped_Forward(self, label:QLabel):
-         label.setText(str(self.M30XY.jog("x", "Forward", self.minute))+" mm")
+        label.setText(str(self.M30XY.jog("x", "Forward", self.minute))+" mm")
          
     def x_stepped_backward(self, label:QLabel):
-         label.setText(str(self.M30XY.jog("x", "Backward", self.minute))+" mm")
+        label.setText(str(self.M30XY.jog("x", "Backward", self.minute))+" mm")
 
     def y_stepped_Forward(self, label:QLabel):
-         label.setText(str(self.M30XY.jog("y", "Forward", self.minute))+" mm")
+        label.setText(str(self.M30XY.jog("y", "Forward", self.minute))+" mm")
          
     def y_stepped_backward(self, label:QLabel):
-         label.setText(str(self.M30XY.jog("y", "Backward", self.minute))+" mm")
+        label.setText(str(self.M30XY.jog("y", "Backward", self.minute))+" mm")
 
-    def z_stepped_Forward(self, label:QLabel):
-         label.setText(str(self.KDC.jog("Forward", self.minute))+" mm")
+    """
+    Since we have two step sizes we must get the step size as we step unlike in the x and y directions
+    """
+    def z_stepped_Forward(self, label:QLabel, lineedit:QLineEdit):
+        self.z_set_step_size(lineedit)
+        label.setText(str(self.KDC.jog("Forward", self.minute))+" mm")
          
-    def z_stepped_backward(self, label:QLabel):
-         label.setText(str(self.KDC.jog("Backward", self.minute))+" mm")
+    def z_stepped_backward(self, label:QLabel, lineedit:QLineEdit):
+        self.z_set_step_size(lineedit)
+        label.setText(str(self.KDC.jog("Backward", self.minute))+" mm")
 
 #       endregion
 
 #       Move To Buttons
 #       region
-    def x_move_to(self, lineedit:QLineEdit):
-        self.M30XY.move_to("x", float(lineedit.text), self.minute)
+    def x_move_to(self, lineedit:QLineEdit, label:QLabel):
+        new_pos = self.M30XY.move_to("x", float(lineedit.text), self.minute)
     
-    def y_move_to(self, lineedit:QLineEdit):
-        self.M30XY.move_to("y", float(lineedit.text), self.minute)
+    def y_move_to(self, lineedit:QLineEdit, label:QLabel):
+        new_pos = self.M30XY.move_to("y", float(lineedit.text), self.minute)
         
-    def x_move_to(self, lineedit:QLineEdit):
-        self.KDC.move_to(float(lineedit.text), self.minute)
+    def z_move_to(self, lineedit:QLineEdit, label:QLabel):
+         new_pos = self.KDC.move_to(float(lineedit.text), self.minute)
 
 #       endregion
 
 #       Bottom Buttons
 #       region
-    def home_all(self):
+    def home_all(self, button:QPushButton):
         self.M30XY.home("x", self.minute)
         self.M30XY.home("y", self.minute)
         self.KDC.home(self.minute)
+        
+        button.setText("Homed")
+        button.setStyleSheet("background-color: green; color: white; font-size: 14px; text-align: center;")
 
     def enable_toggle_all(self, button:QPushButton):
         if button.isChecked:
-            # Change button color
             self.M30XY.enable("x")
             self.M30XY.enable("y")
             self.KDC.enable()
-        else:
-            # Change button color
+            
+            button.setText("Enabled")
+            button.setStyleSheet("background-color: green; color: white; font-size: 14px; text-align: center;")
+        else: 
             self.M30XY.disable("x")
             self.M30XY.disable("y")
             self.KDC.disable()
+            
+            button.setText("Disabled")
+            button.setStyleSheet("background-color: red; color: white; font-size: 14px; text-align: center;")
             
         
 #       endregion

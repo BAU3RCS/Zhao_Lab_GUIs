@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QFrame
 from PyQt6.QtWidgets import QLabel, QPushButton
 
 from UI.Custom_Widgets.Custom_Widgets import Color, CustomLineEdit
+from UI.Logic.Button_To_Device_logic import device_commands
 
 # Subclass QMainWindow to customize your application's main window
 class Stage_MainWindow(QMainWindow):
@@ -36,7 +37,7 @@ class Stage_MainWindow(QMainWindow):
     # Label Settings
     min_label_width = 100
     
-    def __init__(self, commands):
+    def __init__(self, commands:device_commands):
         super().__init__()
 
         # Class connected to devices
@@ -122,6 +123,8 @@ class Stage_MainWindow(QMainWindow):
         self.x_row[2].setPlaceholderText("default step")
         self.x_row[2].setMaximumWidth(self.max_lineedit_width)
         
+        self.x_row[2].editingFinished.connect(lambda: self.commands.x_set_step_size(self.x_row[2].text()))
+        
         self.x_stepbuttons = QHBoxLayout()
         self.x_step_left   = QPushButton("- X",self)
         self.x_step_right  = QPushButton("+ X",self)
@@ -132,8 +135,8 @@ class Stage_MainWindow(QMainWindow):
         self.x_stepbuttons.addWidget(self.x_step_left)
         self.x_stepbuttons.addWidget(self.x_step_right)
         
-        self.x_step_left.setCheckable(True)
-        self.x_step_left.clicked.connect(lambda: self.commands.x_stepped_left(self.x_row[1]))
+        self.x_step_left.clicked.connect( lambda: self.commands.x_stepped_left(self.x_row[1]))
+        self.x_step_right.clicked.connect(lambda: self.commands.x_stepped_right(self.x_row[1]))
         
         self.x_row.append(self.x_stepbuttons)
         
@@ -145,6 +148,8 @@ class Stage_MainWindow(QMainWindow):
         self.x_move_button  = QPushButton("Move",self)
         self.x_move_button.setMinimumHeight(self.min_button_height)
         self.x_row.append(self.x_move_button)
+        
+        self.x_row[5].clicked.connect(lambda: commands.x_move_to(self.x_row[4], self.x_row[1])) 
         
         for i in range(len(self.x_row)):
             if i == 3:
@@ -175,6 +180,8 @@ class Stage_MainWindow(QMainWindow):
         self.y_row[2].setPlaceholderText("default step")
         self.y_row[2].setMaximumWidth(self.max_lineedit_width)
         
+        self.y_row[2].editingFinished.connect(lambda: self.commands.y_set_step_size(self.y_row[2].text()))
+        
         self.y_stepbuttons = QHBoxLayout()
         self.y_step_left   = QPushButton("- Y",self)
         self.y_step_right  = QPushButton("+ Y",self)
@@ -186,6 +193,9 @@ class Stage_MainWindow(QMainWindow):
         self.y_stepbuttons.addWidget(self.y_step_right)
         self.y_row.append(self.y_stepbuttons)
         
+        self.y_step_left.clicked.connect( lambda: self.commands.y_stepped_left(self.y_row[1]))
+        self.y_step_right.clicked.connect(lambda: self.commands.y_stepped_right(self.y_row[1]))
+        
         self.y_row.append(CustomLineEdit("mm"))
         self.y_row[4].setMaxLength(10)
         self.y_row[4].setPlaceholderText("coordinate")
@@ -194,6 +204,8 @@ class Stage_MainWindow(QMainWindow):
         self.y_move_button  = QPushButton("Move",self)
         self.y_move_button.setMinimumHeight(self.min_button_height)
         self.y_row.append(self.y_move_button)
+        
+        self.y_row[5].clicked.connect(lambda: commands.y_move_to(self.y_row[4], self.y_row[1])) 
         
 
     
@@ -252,6 +264,11 @@ class Stage_MainWindow(QMainWindow):
         self.z_small_steps.addWidget(self.z_small_step_right)
         self.z_row[3].addLayout(self.z_small_steps)
         
+        self.z_big_step_left.clicked.connect( lambda: self.commands.z_stepped_left(self.z_row[1], self.z_big_step))
+        self.z_big_step_right.clicked.connect(lambda: self.commands.z_stepped_right(self.z_row[1], self.z_big_step))
+        self.z_small_step_left.clicked.connect( lambda: self.commands.z_stepped_left(self.z_row[1], self.z_small_step))
+        self.z_small_step_right.clicked.connect(lambda: self.commands.z_stepped_right(self.z_row[1], self.z_small_step))
+        
         self.z_row.append(CustomLineEdit("mm"))
         self.z_row[4].setMaxLength(10)
         self.z_row[4].setPlaceholderText("coordinate")
@@ -260,6 +277,8 @@ class Stage_MainWindow(QMainWindow):
         self.z_move_button = QPushButton("Move",self)
         self.z_move_button.setMinimumHeight(self.min_button_height)
         self.z_row.append(self.z_move_button)
+        
+        self.z_row[5].clicked.connect(lambda: commands.z_move_to(self.z_row[4], self.z_row[1])) 
         
         
         for i in range(len(self.z_row)):
@@ -274,11 +293,15 @@ class Stage_MainWindow(QMainWindow):
         self.thorlabs_buttons = QHBoxLayout()
         self.button_row    = []
         
-        self.button_row.append(QPushButton("Enable" ,self))
-        self.button_row.append(QPushButton("Home"   ,self))
+        self.button_row.append(QPushButton("Enabled" ,self))
+        self.button_row.append(QPushButton("Home"    ,self))
         
-        for i in range(len(self.button_row)):
-            self.button_row[i].setStyleSheet("text-align: center;")
+        self.button_row[0].setStyleSheet("background-color: green; color: white; font-size: 14px; text-align: center;")
+        self.button_row[1].setStyleSheet("background-color: red; color: white; font-size: 14px; text-align: center;")
+        
+        # Connecting to logic
+        self.button_row[0].clicked.connect(lambda: self.commands.enable_toggle_all(self.button_row[0]))
+        self.button_row[1].clicked.connect(lambda: self.commands.home_all(self.button_row[1]))
             
         self.thorlabs_layout.addWidget(self.button_row[0], 4, 0, 1, 3)
         self.thorlabs_layout.addWidget(self.button_row[1], 4, 3, 1, 3)
