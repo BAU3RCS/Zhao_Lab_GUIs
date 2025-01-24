@@ -1,120 +1,122 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jan 24 13:44:29 2020
-
-@author: kaifei Kang
-"""
+from ctypes import WinDLL, create_string_buffer
+import os
+import sys
 import time
-import pyvisa as visa
-import numpy as np
-rm=visa.ResourceManager()
+
+dll_path = r"DLLs\Prior\PriorScientificSDK.dll"
 
 class prior():
     
-    def __init__(self,addr='ASRL5::INSTR'):
-        self.addr=addr 
-#        self.inst=rm.open_resource(self.addr)
+    def __init__(self):
 
-    def move_XY(self,x,y):
-        self.set_value('G {},{}'.format(x,y))
+        # Movement limits specificied by company in microns
+        self.x_lim = 108000
+        self.y_lim = -108000
+        self.SDKPrior = None
+        self.sessionID = None 
+        self.ret = None 
+        self.rx = None 
 
-    def move_X(self,x):
-        self.set_value('GX {}'.format(x))
-        
-    def move_Y(self,y):
-        self.set_value('GY {}'.format(y))
-        
-    def move_Z(self,z):
-        self.set_value('GZ {}'.format(z))        
+        if os.path.exists(dll_path):
+            self.SDKPrior = WinDLL(dll_path)
+            print("DLL loaded.")
 
-    def move_Xrel(self,x):
-        x=float(x)
-        if x>0:
-            self.step_r(x)
         else:
-            self.step_l(np.abs(x))
+            raise RuntimeError("DLL could not be loaded.")
         
-    def move_Yrel(self,x):
-        x=float(x)
-        if x>0:
-            self.step_f(x)
-        else:
-            self.step_b(np.abs(x))
-        
-    def move_Zrel(self,z):
-        z=float(z)
-        if z>0:
-            self.stepZ_up(z)
-        else:
-            self.stepZ_down(np.abs(z))
+        self.rx = create_string_buffer(1000)
 
-    def step_f(self,stepsize):
-        try:
-            self.set_value('F {}'.format(stepsize))
-        except:
-            self.inst.close()
-         
-    def step_b(self,stepsize):
-        try:
-            self.set_value('B {}'.format(stepsize))    
-        except:
-            self.inst.close()
+        self.ret = self.SDKPrior.PriorScientificSDK_Initialise()
 
-    def step_l(self,stepsize):
-        try:
-            self.set_value('L {}'.format(stepsize))
-        except:
-            self.inst.close()
-         
-    def step_r(self,stepsize):
-        try:
-            self.set_value('R {}'.format(stepsize))
-        except:
-            self.inst.close()
+        if self.ret:
+            print(f"Error initialising {self.ret}")
+            sys.exit()
+        else:
+            print(f"Ok initialising {self.ret}")
+
+        self.ret = self.SDKPrior.PriorScientificSDK_Version(self.rx)
+        print(f"dll version api self.ret={self.ret}, version={self.rx.value.decode()}")
+
+
+        self.sessionID = self.SDKPrior.PriorScientificSDK_OpenNewSession()
+        if self.sessionID < 0:
+            print(f"Error getting self.sessionID {self.ret}")
+        else:
+            print(f"Self.sessionID = {self.sessionID}")
+
+
+        self.ret = self.SDKPrior.PriorScientificSDK_cmd(
+            self.sessionID, create_string_buffer(b"dll.apitest 33 goodresponse"), self.rx
+        )
+        print(f"api response {self.ret}, self.rx = {self.rx.value.decode()}")
+
+        self.ret = self.SDKPrior.PriorScientificSDK_cmd(
+            self.sessionID, create_string_buffer(b"dll.apitest -300 stillgoodresponse"), self.rx
+        )
+        print(f"api response {self.ret}, self.rx = {self.rx.value.decode()}")
+
+    def cmd(self, msg):
+        #executes commands to hardware
+
+        self.ret = self.SDKPrior.PriorScientificSDK_cmd(
+        self.sessionID, create_string_buffer(msg.encode()), self.rx
+        )
         
-    def stepZ_up(self,stepsize):
-        try:
-            self.set_value('U {}'.format(stepsize))
-        except:
-            self.inst.close()
-        
-    def stepZ_down(self,stepsize):
-        try:
-            self.set_value('D {}'.format(stepsize))        
-        except:
-            self.inst.close()
-        
-    def get_P(self):
-        
-        while True:    
-            try:
-                pos=self.get_value('PS?\r')+self.get_value('PS?\r')
-                return pos.strip('R')
-                break                                                                                                                                                           
+        if self.ret:
+            raise RuntimeError(f"Api error {self.ret}")
             
-            except:
-                self.inst.close()
-                continue
-            
-    def set_value(self,command):
-        try:
-            self.inst=rm.open_resource(self.addr,baud_rate = 9600)
-            self.inst.write_termination='\r'
-            self.inst.read_termination='\r'  
-            self.inst.write(command)
-            self.inst.close()
-            time.sleep(0.01)
-        except:
-            pass
-        
-    def get_value(self,command):
-        
-        self.inst=rm.open_resource(self.addr,baud_rate = 9600)
-        self.inst.write_termination='\r'
-        self.inst.read_termination='\r'  
-        return self.inst.query(command)
-        self.inst.close()
-
+        return self.ret, self.rx.value.decode()
     
-#P=prior()
-#print(P.get_P())
+    def connect(self, port):
+        # connects to specified port
+
+        self.cmd(f"controller.connect.nd {port}")
+        print(f"Connected to port {port}.")
+
+
+    def disconnect(self):
+        # disconnects the hardware 
+        self.cmd("controller.disconnect")
+
+    def goto_ref(self):
+        # move stage to reference point (top right corner)
+        self.cmd("controller.stage.reference.set")
+
+    def set_cur_pos(self, x, y):
+        # sets the current position to specified coordinates
+        self.cmd(f"controller.stage.position.set {x} {y}")
+    
+    def goto_pos(self, x, y):
+        # moves stage to specified position 
+        self.cmd(f"controller.stage.goto-position {x} {y}")
+    
+    def move_rel(self, x, y):
+        # moves stage relative to current position
+        self.cmd(f"controller.stage.move-relative {x} {y}")
+
+    def stop_moving(self):
+        # stops moving stage if it is moving 
+        self.cmd("controller.stop.smoothly")
+
+    def calibrate(self):
+        # center the stage and set as (0,0)
+
+        self.goto_ref()
+        self.wait()
+        self.set_cur_pos(0, 0)
+        self.wait()
+        self.goto_pos(self.x_lim/2, self.y_lim/2)
+        self.wait()
+        self.set_cur_pos(0, 0)
+
+    def get_pos(self):
+        # returns x and y values of current position
+        return map(int, (self.cmd("controller.stage.position.get")[1].split(",")))
+    
+    def wait(self):
+        # wait until stage is not busy 
+
+        print("Waiting ...")
+        while int(self.cmd("controller.stage.busy.get")[1]):
+            time.sleep(0.1)
+        print("Ready.")
