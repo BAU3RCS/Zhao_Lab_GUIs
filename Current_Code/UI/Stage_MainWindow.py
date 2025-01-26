@@ -113,17 +113,17 @@ class Stage_MainWindow(QMainWindow):
         self.x_row[0].setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.x_row[0].setMinimumWidth(self.min_axis_width)
         
-        self.x_row.append(QLabel(str(00.000)+" mm"))
+        self.x_row.append(QLabel(str(self.commands.x_get_pos())+" mm"))
         self.x_row[1].setStyleSheet("border: 2px solid grey;")
         self.x_row[1].setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.x_row[1].setMinimumWidth(self.min_label_width)
         
         self.x_row.append(CustomLineEdit("mm"))
         self.x_row[2].setMaxLength(10)
-        self.x_row[2].setPlaceholderText("default step")
+        self.x_row[2].setPlaceholderText("0.5")
         self.x_row[2].setMaximumWidth(self.max_lineedit_width)
         
-        self.x_row[2].editingFinished.connect(lambda: self.commands.x_set_step_size(self.x_row[2].text()))
+        self.x_row[2].editingFinished.connect(lambda: self.commands.x_set_step_size(self.x_row[2]))
         
         self.x_stepbuttons = QHBoxLayout()
         self.x_step_left   = QPushButton("- X",self)
@@ -135,8 +135,8 @@ class Stage_MainWindow(QMainWindow):
         self.x_stepbuttons.addWidget(self.x_step_left)
         self.x_stepbuttons.addWidget(self.x_step_right)
         
-        self.x_step_left.clicked.connect( lambda: self.commands.x_stepped_left(self.x_row[1]))
-        self.x_step_right.clicked.connect(lambda: self.commands.x_stepped_right(self.x_row[1]))
+        self.x_step_left.clicked.connect( lambda: self.commands.x_stepped_backward(self.x_row[1]))
+        self.x_step_right.clicked.connect(lambda: self.commands. x_stepped_forward(self.x_row[1]))
         
         self.x_row.append(self.x_stepbuttons)
         
@@ -170,17 +170,17 @@ class Stage_MainWindow(QMainWindow):
         self.y_row[0].setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.y_row[0].setMinimumWidth(self.min_axis_width)
         
-        self.y_row.append(QLabel(str(00.000)+" mm"))
+        self.y_row.append(QLabel(str(self.commands.y_get_pos())+" mm"))
         self.y_row[1].setStyleSheet("border: 2px solid grey;")
         self.y_row[1].setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.y_row[1].setMinimumWidth(self.min_label_width)
         
         self.y_row.append(CustomLineEdit("mm"))
         self.y_row[2].setMaxLength(10)
-        self.y_row[2].setPlaceholderText("default step")
+        self.y_row[2].setPlaceholderText("0.5")
         self.y_row[2].setMaximumWidth(self.max_lineedit_width)
         
-        self.y_row[2].editingFinished.connect(lambda: self.commands.y_set_step_size(self.y_row[2].text()))
+        self.y_row[2].editingFinished.connect(lambda: self.commands.y_set_step_size(self.y_row[2]))
         
         self.y_stepbuttons = QHBoxLayout()
         self.y_step_left   = QPushButton("- Y",self)
@@ -193,8 +193,8 @@ class Stage_MainWindow(QMainWindow):
         self.y_stepbuttons.addWidget(self.y_step_right)
         self.y_row.append(self.y_stepbuttons)
         
-        self.y_step_left.clicked.connect( lambda: self.commands.y_stepped_left(self.y_row[1]))
-        self.y_step_right.clicked.connect(lambda: self.commands.y_stepped_right(self.y_row[1]))
+        self.y_step_left.clicked.connect( lambda: self.commands.y_stepped_backward(self.y_row[1]))
+        self.y_step_right.clicked.connect(lambda: self.commands.y_stepped_forward(self.y_row[1]))
         
         self.y_row.append(CustomLineEdit("mm"))
         self.y_row[4].setMaxLength(10)
@@ -224,7 +224,7 @@ class Stage_MainWindow(QMainWindow):
         self.z_row[0].setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.z_row[0].setMinimumWidth(self.min_axis_width)
         
-        self.z_row.append(QLabel(str(00.000)+" mm"))
+        self.z_row.append(QLabel(str(self.commands.z_get_pos())+" mm"))
         self.z_row[1].setStyleSheet("border: 2px solid grey;")
         self.z_row[1].setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.z_row[1].setMinimumWidth(self.min_label_width)
@@ -232,11 +232,11 @@ class Stage_MainWindow(QMainWindow):
         self.z_row.append(QVBoxLayout())
         self.z_big_step = CustomLineEdit("mm")
         self.z_big_step.setMaxLength(10)
-        self.z_big_step.setPlaceholderText("default big step")
+        self.z_big_step.setPlaceholderText("0.1")
         self.z_big_step.setMaximumWidth(self.max_lineedit_width)
         self.z_small_step = CustomLineEdit("mm")
         self.z_small_step.setMaxLength(10)
-        self.z_small_step.setPlaceholderText("default small step")
+        self.z_small_step.setPlaceholderText("0.05")
         self.z_small_step.setMaximumWidth(self.max_lineedit_width)
         self.z_row[2].addWidget(self.z_big_step)
         self.z_row[2].addWidget(self.z_small_step)
@@ -264,10 +264,10 @@ class Stage_MainWindow(QMainWindow):
         self.z_small_steps.addWidget(self.z_small_step_right)
         self.z_row[3].addLayout(self.z_small_steps)
         
-        self.z_big_step_left.clicked.connect( lambda: self.commands.z_stepped_left(self.z_row[1], self.z_big_step))
-        self.z_big_step_right.clicked.connect(lambda: self.commands.z_stepped_right(self.z_row[1], self.z_big_step))
-        self.z_small_step_left.clicked.connect( lambda: self.commands.z_stepped_left(self.z_row[1], self.z_small_step))
-        self.z_small_step_right.clicked.connect(lambda: self.commands.z_stepped_right(self.z_row[1], self.z_small_step))
+        self.z_big_step_left.clicked.connect( lambda: self.commands.z_stepped_backward(self.z_row[1], self.z_big_step))
+        self.z_big_step_right.clicked.connect(lambda: self.commands.z_stepped_forward(self.z_row[1], self.z_big_step))
+        self.z_small_step_left.clicked.connect( lambda: self.commands.z_stepped_backward(self.z_row[1], self.z_small_step))
+        self.z_small_step_right.clicked.connect(lambda: self.commands.z_stepped_forward(self.z_row[1], self.z_small_step))
         
         self.z_row.append(CustomLineEdit("mm"))
         self.z_row[4].setMaxLength(10)

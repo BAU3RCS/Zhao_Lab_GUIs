@@ -43,32 +43,44 @@ class device_commands():
 #   Thorlabs
 #   region
 
+#       Get Position
+#       region
+    def x_get_pos(self):
+        return self.M30XY.get_pos("x")
+        
+    def y_get_pos(self):
+        return self.M30XY.get_pos("y")
+        
+    def z_get_pos(self):
+        return self.KDC.get_pos()
+        
+#       endregion
 
 #       Set Step Size
 #       region
     def x_set_step_size(self, lineedit:QLineEdit):
-        self.M30XY.set_jog_velocity_params("x", step_size = float(lineedit.text))
+        self.M30XY.set_jog_velocity_params("x", step_size = float(lineedit.text()))
     
     def y_set_step_size(self, lineedit:QLineEdit):
-        self.M30XY.set_jog_velocity_params("y", step_size = float(lineedit.text))
+        self.M30XY.set_jog_velocity_params("y", step_size = float(lineedit.text()))
         
     """
     This is now just a helper function for the step buttons in 
     """
     def z_set_step_size(self, lineedit:QLineEdit):
-        self.KDC.set_jog_velocity_params(step_size = float(lineedit.text))
+        self.KDC.set_jog_velocity_params(step_size = float(lineedit.text()))
     
 #       endregion
     
 #       Step Buttons
 #       region
-    def x_stepped_Forward(self, label:QLabel):
+    def x_stepped_forward(self, label:QLabel):
         label.setText(str(self.M30XY.jog("x", "Forward", self.minute))+" mm")
          
     def x_stepped_backward(self, label:QLabel):
         label.setText(str(self.M30XY.jog("x", "Backward", self.minute))+" mm")
 
-    def y_stepped_Forward(self, label:QLabel):
+    def y_stepped_forward(self, label:QLabel):
         label.setText(str(self.M30XY.jog("y", "Forward", self.minute))+" mm")
          
     def y_stepped_backward(self, label:QLabel):
@@ -77,7 +89,7 @@ class device_commands():
     """
     Since we have two step sizes we must get the step size as we step unlike in the x and y directions
     """
-    def z_stepped_Forward(self, label:QLabel, lineedit:QLineEdit):
+    def z_stepped_forward(self, label:QLabel, lineedit:QLineEdit):
         self.z_set_step_size(lineedit)
         label.setText(str(self.KDC.jog("Forward", self.minute))+" mm")
          
@@ -90,13 +102,16 @@ class device_commands():
 #       Move To Buttons
 #       region
     def x_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = self.M30XY.move_to("x", float(lineedit.text), self.minute)
+        new_pos = self.M30XY.move_to("x", float(lineedit.text()), self.minute)
+        label.setText(new_pos)
     
     def y_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = self.M30XY.move_to("y", float(lineedit.text), self.minute)
+        new_pos = self.M30XY.move_to("y", float(lineedit.text()), self.minute)
+        label.setText(new_pos)
         
     def z_move_to(self, lineedit:QLineEdit, label:QLabel):
-         new_pos = self.KDC.move_to(float(lineedit.text), self.minute)
+         new_pos = self.KDC.move_to(float(lineedit.text()), self.minute)
+         label.setText(new_pos)
 
 #       endregion
 
