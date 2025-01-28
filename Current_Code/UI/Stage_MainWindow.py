@@ -12,8 +12,9 @@ from PyQt6.QtWidgets import QMainWindow, QWidget
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QFrame
 from PyQt6.QtWidgets import QLabel, QPushButton
 
-from UI.Custom_Widgets.Custom_Widgets import Color, CustomLineEdit
+from UI.Custom_Widgets.Custom_Widgets import CustomLineEdit
 from UI.Logic.Button_To_Device_logic import device_commands
+from UI.prior_gui import priorGUI
 
 # Subclass QMainWindow to customize your application's main window
 class Stage_MainWindow(QMainWindow):
@@ -37,12 +38,13 @@ class Stage_MainWindow(QMainWindow):
     # Label Settings
     min_label_width = 100
     
-    def __init__(self, commands:device_commands):
+    def __init__(self, commands:device_commands, prior_stage):
         super().__init__()
 
         # Class connected to devices
-        self.commands = commands
-
+        self.commands    = commands
+        self.prior_stage = prior_stage
+        
         self.setWindowTitle(" Thorlabs and Prior Stage Controls")
         
         # Toplevel Layout
@@ -348,7 +350,7 @@ class Stage_MainWindow(QMainWindow):
         self.toplevel_layout.addWidget(self.prior_label)
         self.toplevel_layout.addWidget(self.prior_frame)
         
-        self.prior_layout.addWidget(Color("blue"))
+        self.prior_layout.addWidget(priorGUI(self.prior_stage))
         
         
         #   endregion

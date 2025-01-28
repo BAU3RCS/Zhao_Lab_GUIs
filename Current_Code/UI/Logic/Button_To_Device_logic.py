@@ -33,12 +33,11 @@ class device_commands():
     # minute in miliseconds
     minute = 60_000
     
-    def __init__(self, KDC:Kcube, M30XY:M30XY, Prior):
+    def __init__(self, KDC:Kcube, M30XY:M30XY):
         """
         """
         self.KDC   = KDC
         self.M30XY = M30XY
-        self.Prior = Prior
         
 #   Thorlabs
 #   region
