@@ -121,6 +121,7 @@ class Stage_MainWindow(QMainWindow):
         self.x_row.append(CustomLineEdit("mm"))
         self.x_row[2].setMaxLength(10)
         self.x_row[2].setPlaceholderText("0.5")
+        self.x_row[2].setText("0.5")
         self.x_row[2].setMaximumWidth(self.max_lineedit_width)
         
         self.x_row[2].editingFinished.connect(lambda: self.commands.x_set_step_size(self.x_row[2]))
@@ -178,6 +179,7 @@ class Stage_MainWindow(QMainWindow):
         self.y_row.append(CustomLineEdit("mm"))
         self.y_row[2].setMaxLength(10)
         self.y_row[2].setPlaceholderText("0.5")
+        self.y_row[2].setText("0.5")
         self.y_row[2].setMaximumWidth(self.max_lineedit_width)
         
         self.y_row[2].editingFinished.connect(lambda: self.commands.y_set_step_size(self.y_row[2]))
@@ -233,10 +235,12 @@ class Stage_MainWindow(QMainWindow):
         self.z_big_step = CustomLineEdit("mm")
         self.z_big_step.setMaxLength(10)
         self.z_big_step.setPlaceholderText("0.1")
+        self.z_big_step.setText("0.1")
         self.z_big_step.setMaximumWidth(self.max_lineedit_width)
         self.z_small_step = CustomLineEdit("mm")
         self.z_small_step.setMaxLength(10)
         self.z_small_step.setPlaceholderText("0.05")
+        self.z_small_step.setText("0.05")
         self.z_small_step.setMaximumWidth(self.max_lineedit_width)
         self.z_row[2].addWidget(self.z_big_step)
         self.z_row[2].addWidget(self.z_small_step)
@@ -296,12 +300,27 @@ class Stage_MainWindow(QMainWindow):
         self.button_row.append(QPushButton("Enabled" ,self))
         self.button_row.append(QPushButton("Home"    ,self))
         
-        self.button_row[0].setStyleSheet("background-color: green; color: white; font-size: 14px; text-align: center;")
+        self.button_row[0].setCheckable(True)
+        self.button_row[0].setStyleSheet("""
+            QPushButton {
+                background-color: green;
+                color: white;
+                font-size: 14px;
+                text-align: center;
+            }
+            QPushButton:checked {
+                background-color: red;
+                color: white;
+                font-size: 14px;
+                text-align: center;
+            }
+        """)
+        
         self.button_row[1].setStyleSheet("background-color: red; color: white; font-size: 14px; text-align: center;")
         
         # Connecting to logic
-        self.button_row[0].clicked.connect(lambda: self.commands.enable_toggle_all(self.button_row[0]))
-        self.button_row[1].clicked.connect(lambda: self.commands.home_all(self.button_row[1]))
+        self.button_row[0].toggled.connect(lambda checked: self.commands.enable_toggle_all(self.button_row[0], checked))
+        self.button_row[1].clicked.connect(lambda: self.commands.home_all(self.button_row[1], self.x_row[1], self.y_row[1], self.z_row[1]))
             
         self.thorlabs_layout.addWidget(self.button_row[0], 4, 0, 1, 3)
         self.thorlabs_layout.addWidget(self.button_row[1], 4, 3, 1, 3)

@@ -27,8 +27,8 @@ app = QApplication(sys.argv)
 # app = QApplication([])
 
 # Creating our devices
-#commands = device_commands(Kcube(SN.SN_KDC101,SN.Z_motor), M30XY(SN.SN_M30XY), "port 3")
-commands = device_commands(SN.SN_KDC101, SN.SN_M30XY, "port 3")
+commands = device_commands(Kcube(SN.SN_KDC101,SN.Z_motor), M30XY(SN.SN_M30XY), "port 3")
+#commands = device_commands(SN.SN_KDC101, SN.SN_M30XY, "port 3")
 
 # Create our main window defined in Stage_MainWindow and show the window
 window = Stage_MainWindow(commands)
@@ -36,3 +36,8 @@ window.show()
 
 # Start the event loop. 
 app.exec()
+
+#TODO:
+# Fix disabled behavoir
+# Add error prevention for moving out of bounds
+# Change to micrometer

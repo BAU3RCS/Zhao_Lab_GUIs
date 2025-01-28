@@ -103,43 +103,47 @@ class device_commands():
 #       region
     def x_move_to(self, lineedit:QLineEdit, label:QLabel):
         new_pos = self.M30XY.move_to("x", float(lineedit.text()), self.minute)
-        label.setText(new_pos)
+        label.setText(str(new_pos))
     
     def y_move_to(self, lineedit:QLineEdit, label:QLabel):
         new_pos = self.M30XY.move_to("y", float(lineedit.text()), self.minute)
-        label.setText(new_pos)
+        label.setText(str(new_pos))
         
     def z_move_to(self, lineedit:QLineEdit, label:QLabel):
          new_pos = self.KDC.move_to(float(lineedit.text()), self.minute)
-         label.setText(new_pos)
+         label.setText(str(new_pos))
 
 #       endregion
 
 #       Bottom Buttons
 #       region
-    def home_all(self, button:QPushButton):
+    def home_all(self, button:QPushButton, X_label:QLabel, y_label:QLabel, z_label:QLabel):
         self.M30XY.home("x", self.minute)
+        X_label.setText(str(self.x_get_pos())+" mm")
+        
         self.M30XY.home("y", self.minute)
+        y_label.setText(str(self.y_get_pos())+" mm")
+        
         self.KDC.home(self.minute)
+        z_label.setText(str(self.z_get_pos())+" mm")
         
         button.setText("Homed")
         button.setStyleSheet("background-color: green; color: white; font-size: 14px; text-align: center;")
 
-    def enable_toggle_all(self, button:QPushButton):
-        if button.isChecked:
+    def enable_toggle_all(self, button:QPushButton, checked):
+        if not checked:
             self.M30XY.enable("x")
             self.M30XY.enable("y")
             self.KDC.enable()
             
             button.setText("Enabled")
-            button.setStyleSheet("background-color: green; color: white; font-size: 14px; text-align: center;")
+
         else: 
             self.M30XY.disable("x")
             self.M30XY.disable("y")
             self.KDC.disable()
             
             button.setText("Disabled")
-            button.setStyleSheet("background-color: red; color: white; font-size: 14px; text-align: center;")
             
         
 #       endregion
