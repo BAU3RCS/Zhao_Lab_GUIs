@@ -4,13 +4,16 @@
 This is folder is where you can find the API documentation for hardware used in the Lab. At the bottom of this document you can find links to go various online resources used throught out the control code and directly to the folders contianing documentation.
 </p1>
 
+<H2> Current GUIs </H2>
+
+ - [5 Axis Stage GUI](/5_axis_thorlabs_prior_stage/)
+    - Currently to use this program you need to clone the repo, create a python virtual environment, install the required [Python packages](/Documentation/requirements.txt), navigate in command line (with the virtual environment active) to where <code>Main.py</code> is [located](/5_axis_thorlabs_prior_stage/) under <code>5_axis_thorlabs_prior_stage</code> folder, and run <code>python Main.py</code>. This should run the program. **NOTE: To run the program without it throwing an error, you must have all stages and components plugged into the computer and turned on.**
+
 <H2> Links </H2>
 
 - How to use Git
-- - [Github Git Documentation](https://docs.github.com/en/get-started/using-git)
-- - [Alternative Documentation and Guides](https://ohshitgit.com/)
-
-- [Python Requirements File](/Documentation/requirements.txt)
+    - [Github Git Documentation](https://docs.github.com/en/get-started/using-git)
+    - [Alternative Documentation and Guides](https://ohshitgit.com/)
 
 <h3> Prior </h3>
 

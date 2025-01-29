@@ -19,13 +19,14 @@ from Controllers.prior_driver import prior
 import Settings.Serial_Numbers as SN
 
 if __name__ == "__main__":
-
-        
-    # You need one (and only one) QApplication instance per application.
+    
+    
     app = QApplication([])
 
     # Creating our devices
     commands = device_commands(Kcube(SN.SN_KDC101,SN.Z_motor), M30XY(SN.SN_M30XY))
+    
+    # Swap for testing without connecting to devices
     #commands = device_commands(SN.SN_KDC101, SN.SN_M30XY, "port 3")
 
     # Create our main window defined in Stage_MainWindow and show the window
@@ -34,10 +35,3 @@ if __name__ == "__main__":
 
     # Start the event loop. 
     app.exec()
-
-    #TODO:
-    # Fix disabled behavoir
-    # Add error prevention for moving out of bounds
-    # Change to micrometer
-    # Might need to change how com ports are loaded.
-    # Might reorganize prior stuff into gui, logic, etc
