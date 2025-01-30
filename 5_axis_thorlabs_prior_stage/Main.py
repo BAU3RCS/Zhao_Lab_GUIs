@@ -8,9 +8,8 @@ Updated XXXXXXXXXXXX
 """
 from PyQt6.QtWidgets import QApplication
 from UI.Stage_MainWindow import Stage_MainWindow
-from  UI.Logic.Button_To_Device_logic import device_commands
+from UI.Logic.Button_To_Device_logic import device_commands
 
-import serial.tools.list_ports
 
 from Controllers.KDC101 import Kcube
 from Controllers.M30XY import M30XY

@@ -38,6 +38,8 @@ class device_commands():
     µm and mm in the logic here. If someone in the future wants to change velocity or accelertation,
     keep in mind the need to possibly change units depending on the planed UI etc. Potentially one could implement
     a function that allows you to automatically switch and change units. I do not have time for this now.
+    
+    Note: The x and y axis are now flipped to match the orientation of the prior stage that it is used on top of.
     """
     
     # µm to mm
@@ -82,50 +84,50 @@ class device_commands():
     This is now just a helper function for the step buttons in 
     """
     def z_set_step_size(self, lineedit:QLineEdit):
-        self.KDC.set_jog_velocity_params(step_size = float(lineedit.text() * self.um_to_mm_factor))
+        self.KDC.set_jog_velocity_params(step_size = float(lineedit.text()) * self.um_to_mm_factor)
     
 #       endregion
     
 #       Step Buttons
 #       region
     def x_stepped_forward(self, label:QLabel):
-        label.setText(str(self.M30XY.jog("x", "Forward", self.minute))+" "+self.units)
+        label.setText(str(-self.M30XY.jog("x", "Backward", self.minute)*self.mm_to_um_factor)+" "+self.units)
          
     def x_stepped_backward(self, label:QLabel):
-        label.setText(str(self.M30XY.jog("x", "Backward", self.minute))+" "+self.units)
+        label.setText(str(-self.M30XY.jog("x", "Forward", self.minute)*self.mm_to_um_factor) +" "+self.units)
 
     def y_stepped_forward(self, label:QLabel):
-        label.setText(str(self.M30XY.jog("y", "Forward", self.minute))+" "+self.units)
+        label.setText(str(-self.M30XY.jog("y", "Backward", self.minute)*self.mm_to_um_factor)+" "+self.units)
          
     def y_stepped_backward(self, label:QLabel):
-        label.setText(str(self.M30XY.jog("y", "Backward", self.minute))+" "+self.units)
+        label.setText(str(-self.M30XY.jog("y", "Forward", self.minute)*self.mm_to_um_factor) +" "+self.units)
 
     """
     Since we have two step sizes we must get the step size as we step unlike in the x and y directions
     """
     def z_stepped_forward(self, label:QLabel, lineedit:QLineEdit):
         self.z_set_step_size(lineedit)
-        label.setText(str(self.KDC.jog("Forward", self.minute))+" "+self.units)
+        label.setText(str(self.KDC.jog("Forward", self.minute)*self.mm_to_um_factor) +" "+self.units)
          
     def z_stepped_backward(self, label:QLabel, lineedit:QLineEdit):
         self.z_set_step_size(lineedit)
-        label.setText(str(self.KDC.jog("Backward", self.minute))+" "+self.units)
+        label.setText(str(self.KDC.jog("Backward", self.minute)*self.mm_to_um_factor)+" "+self.units)
 
 #       endregion
 
 #       Move To Buttons
 #       region
     def x_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = self.M30XY.move_to("x", float(lineedit.text()) * self.um_to_mm_factor, self.minute)
+        new_pos = -self.M30XY.move_to("x", float(lineedit.text()) * self.um_to_mm_factor, self.minute)
         label.setText(str(new_pos)+" "+self.units)
     
     def y_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = self.M30XY.move_to("y", float(lineedit.text()) * self.um_to_mm_factor, self.minute)
+        new_pos = -self.M30XY.move_to("y", float(lineedit.text()) * self.um_to_mm_factor, self.minute)
         label.setText(str(new_pos)+" "+self.units)
         
     def z_move_to(self, lineedit:QLineEdit, label:QLabel):
-         new_pos = self.KDC.move_to(float(lineedit.text()) * self.um_to_mm_factor, self.minute)
-         label.setText(str(new_pos)+" "+self.units)
+        new_pos = self.KDC.move_to(float(lineedit.text()) * self.um_to_mm_factor, self.minute)
+        label.setText(str(new_pos)+" "+self.units)
 
 #       endregion
 

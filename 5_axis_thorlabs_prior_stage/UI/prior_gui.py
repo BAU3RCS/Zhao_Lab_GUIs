@@ -158,8 +158,11 @@ class priorGUI(QWidget):
         Connects signals of all widgets to their respective functions or handlers.
         """
         # Buttons
-        self.up_button.clicked.connect(self.move_up)
-        self.down_button.clicked.connect(self.move_down)
+        """
+        Swapped up and down to agree with intuitive movement from screen to stage in box
+        """
+        self.up_button.clicked.connect(self.move_down)
+        self.down_button.clicked.connect(self.move_up)
         self.left_button.clicked.connect(self.move_left)
         self.right_button.clicked.connect(self.move_right)
         #self.stop_button.clicked.connect(self.stop)
@@ -197,12 +200,12 @@ class priorGUI(QWidget):
         self.port_spinbox.setDisabled(checked)
 
     def move_left(self):
-        self.stage.move_rel(self.step_size, 0)
+        self.stage.move_rel(-self.step_size, 0)
         print("Move Left button clicked")
         self.update_pos_label()
 
     def move_right(self):
-        self.stage.move_rel(-self.step_size, 0)
+        self.stage.move_rel(self.step_size, 0)
         print("Move Right button clicked")
         self.update_pos_label()
 
@@ -231,17 +234,19 @@ class priorGUI(QWidget):
         print(f"Step size updated to {self.step_size} microns.")
 
     def go_to_position(self):
-        x = self.x_input.value()
-        y = self.y_input.value()
+        # Negative is added to Y to agree with intuition, orientation and movement of stage
+        x =  self.x_input.value()
+        y = -self.y_input.value()
         print(f"Going to position: X={x}, Y={y}")
         self.stage.goto_pos(x, y)
         self.update_pos_label()
 
     def update_pos_label(self):
+        # Negative is added to Y to agree with intuition, orientation and movement of stage
         self.stage.wait()
         self.xpos, self.ypos = self.stage.get_pos()
-        self.xpos_label.setText(f"X: {self.xpos}")
-        self.ypos_label.setText(f"Y: {self.ypos}") 
+        self.xpos_label.setText(f"X: { self.xpos}")
+        self.ypos_label.setText(f"Y: {-self.ypos}") 
 
     def keyPressEvent(self, event):
         
