@@ -118,11 +118,11 @@ class device_commands():
 #       Move To Buttons
 #       region
     def x_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = -self.M30XY.move_to("x", float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+        new_pos = -self.M30XY.move_to("x", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
         label.setText(str(new_pos)+" "+self.units)
     
     def y_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = -self.M30XY.move_to("y", float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+        new_pos = -self.M30XY.move_to("y", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
         label.setText(str(new_pos)+" "+self.units)
         
     def z_move_to(self, lineedit:QLineEdit, label:QLabel):
