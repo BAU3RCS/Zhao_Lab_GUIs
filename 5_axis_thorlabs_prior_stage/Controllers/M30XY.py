@@ -120,6 +120,14 @@ class M30XY():
             self.channels[channel].Home(timeout)
         except Exception as error:
             sys.exit(error)
+            
+    def is_enabled(self, channel):
+        """
+        Enables the controller to respond to commands.
+        Input: Channel ("x", "y")
+        Output: Returns true if enabled and flase if disabled.
+        """
+        return self.channels[channel].IsEnabled()
 
     def enable(self, channel):
         """

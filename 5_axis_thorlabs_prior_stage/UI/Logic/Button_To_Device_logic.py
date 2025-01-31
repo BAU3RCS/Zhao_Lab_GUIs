@@ -18,7 +18,7 @@ implementing abstract classes at this point in time is a bit overkill.
 At somepoint in time I wish to comeback through this file and and several others to tidy up and create actual boundaries....
 I hope future me is not too upset with myself right now and this ode is never sung by another. Good luck out there
 """
-from PyQt6.QtWidgets import QLabel, QPushButton, QLineEdit
+from PyQt6.QtWidgets import QLabel, QPushButton, QLineEdit, QMessageBox
 
 from Controllers.KDC101 import Kcube
 from Controllers.M30XY import M30XY
@@ -42,6 +42,8 @@ class device_commands():
     Note: The x and y axis are now flipped to match the orientation of the prior stage that it is used on top of.
     """
     
+    #TODO: Might have fixed the decimal precision error with rounding. It needs to be tested
+    
     # µm to mm
     um_to_mm_factor = 1e-3
     
@@ -59,26 +61,58 @@ class device_commands():
 #   Thorlabs
 #   region
 
+    def show_disabled_error(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Device Disabled")
+        msg.setText("Enable the device to issue this command")
+        msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+        msg.exec()
+
+#       Check Enabled/Disabled
+#       region
+    def  M30XY_is_enabled(self, channel):
+        return self.M30XY.is_enabled(channel)
+    
+    def  KDC_is_enabled(self):
+        return self.KDC.is_enabled()
+    
+#       endregion
+
 #       Get Position
 #       region
     def x_get_pos(self):
-        return self.M30XY.get_pos("x") * self.mm_to_um_factor
+        if self.M30XY_is_enabled("x"):
+            return round(self.M30XY.get_pos("x") * self.mm_to_um_factor, 3)
+        else:
+            self.show_disabled_error()
         
     def y_get_pos(self):
-        return self.M30XY.get_pos("y") * self.mm_to_um_factor
+        if self.M30XY_is_enabled("y"):
+            return round(self.M30XY.get_pos("y") * self.mm_to_um_factor, 3)
+        else:
+            self.show_disabled_error()
         
     def z_get_pos(self):
-        return self.KDC.get_pos() * self.mm_to_um_factor
+        if self.KDC_is_enabled():
+            return round(self.KDC.get_pos()      * self.mm_to_um_factor, 3)
+        else:
+            self.show_disabled_error()
         
 #       endregion
 
 #       Set Step Size
 #       region
     def x_set_step_size(self, lineedit:QLineEdit):
-        self.M30XY.set_jog_velocity_params("x", step_size = float(lineedit.text()) * self.um_to_mm_factor)
+        if self.M30XY_is_enabled("x"):
+            self.M30XY.set_jog_velocity_params("x", step_size = float(lineedit.text()) * self.um_to_mm_factor)
+        else:
+            self.show_disabled_error()
     
     def y_set_step_size(self, lineedit:QLineEdit):
-        self.M30XY.set_jog_velocity_params("y", step_size = float(lineedit.text()) * self.um_to_mm_factor)
+        if self.M30XY_is_enabled("y"):
+            self.M30XY.set_jog_velocity_params("y", step_size = float(lineedit.text()) * self.um_to_mm_factor)
+        else:
+            self.show_disabled_error()
         
     """
     This is now just a helper function for the step buttons in 
@@ -91,60 +125,90 @@ class device_commands():
 #       Step Buttons
 #       region
     def x_stepped_forward(self, label:QLabel):
-        label.setText(str(-self.M30XY.jog("x", "Backward", self.minute)*self.mm_to_um_factor)+" "+self.units)
+        if self.M30XY_is_enabled("x"):
+            label.setText(str(round(-self.M30XY.jog("x", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+        else:
+            self.show_disabled_error()
          
     def x_stepped_backward(self, label:QLabel):
-        label.setText(str(-self.M30XY.jog("x", "Forward", self.minute)*self.mm_to_um_factor) +" "+self.units)
+        if self.M30XY_is_enabled("x"):
+            label.setText(str(round(-self.M30XY.jog("x", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+        else:
+            self.show_disabled_error()
 
     def y_stepped_forward(self, label:QLabel):
-        label.setText(str(-self.M30XY.jog("y", "Backward", self.minute)*self.mm_to_um_factor)+" "+self.units)
+        if self.M30XY_is_enabled("y"):
+            label.setText(str(round(-self.M30XY.jog("y", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+        else:
+            self.show_disabled_error()
          
     def y_stepped_backward(self, label:QLabel):
-        label.setText(str(-self.M30XY.jog("y", "Forward", self.minute)*self.mm_to_um_factor) +" "+self.units)
+        if self.M30XY_is_enabled("y"):
+            label.setText(str(round(-self.M30XY.jog("y", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+        else:
+            self.show_disabled_error()
 
     """
     Since we have two step sizes we must get the step size as we step unlike in the x and y directions
     """
     def z_stepped_forward(self, label:QLabel, lineedit:QLineEdit):
-        self.z_set_step_size(lineedit)
-        label.setText(str(self.KDC.jog("Forward", self.minute)*self.mm_to_um_factor) +" "+self.units)
+        if self.KDC_is_enabled():
+            self.z_set_step_size(lineedit)
+            label.setText(str(round(self.KDC.jog("Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+        else:
+            self.show_disabled_error()
          
     def z_stepped_backward(self, label:QLabel, lineedit:QLineEdit):
-        self.z_set_step_size(lineedit)
-        label.setText(str(self.KDC.jog("Backward", self.minute)*self.mm_to_um_factor)+" "+self.units)
-
+        if self.KDC_is_enabled():
+            self.z_set_step_size(lineedit)
+            label.setText(str(round(self.KDC.jog("Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+        else:
+            self.show_disabled_error()
+            
 #       endregion
 
 #       Move To Buttons
 #       region
     def x_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = -self.M30XY.move_to("x", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
-        label.setText(str(new_pos)+" "+self.units)
+        if self.M30XY_is_enabled("x"):
+            new_pos = -self.M30XY.move_to("x", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+            label.setText(str(round(new_pos, 3))+" "+self.units)
+        else:
+            self.show_disabled_error()
     
     def y_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = -self.M30XY.move_to("y", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
-        label.setText(str(new_pos)+" "+self.units)
+        if self.M30XY_is_enabled("y"):
+            new_pos = -self.M30XY.move_to("y", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+            label.setText(str(round(new_pos, 3))+" "+self.units)
+        else:
+            self.show_disabled_error()
         
     def z_move_to(self, lineedit:QLineEdit, label:QLabel):
-        new_pos = self.KDC.move_to(float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
-        label.setText(str(new_pos)+" "+self.units)
+        if self.KDC_is_enabled():
+            new_pos = self.KDC.move_to(float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+            label.setText(str(round(new_pos, 3))+" "+self.units)
+        else:
+            self.show_disabled_error()
 
 #       endregion
 
 #       Bottom Buttons
 #       region
     def home_all(self, button:QPushButton, X_label:QLabel, y_label:QLabel, z_label:QLabel):
-        self.M30XY.home("x", self.minute)
-        X_label.setText(str(self.x_get_pos())+" "+self.units)
-        
-        self.M30XY.home("y", self.minute)
-        y_label.setText(str(self.y_get_pos())+" "+self.units)
-        
-        self.KDC.home(self.minute)
-        z_label.setText(str(self.z_get_pos())+" "+self.units)
-        
-        button.setText("Homed")
-        button.setStyleSheet("background-color: green; color: white; font-size: 14px; text-align: center;")
+        if self.M30XY_is_enabled("y") and self.M30XY_is_enabled("x") and self.KDC_is_enabled():
+            self.M30XY.home("x", self.minute)
+            X_label.setText(str(round(self.x_get_pos(), 3))+" "+self.units)
+            
+            self.M30XY.home("y", self.minute)
+            y_label.setText(str(round(self.y_get_pos(), 3))+" "+self.units)
+            
+            self.KDC.home(self.minute)
+            z_label.setText(str(round(self.z_get_pos(), 3))+" "+self.units)
+            
+            button.setText("Homed")
+            button.setStyleSheet("background-color: green; color: white; font-size: 14px; text-align: center;")
+        else:
+            self.show_disabled_error()
 
     def enable_toggle_all(self, button:QPushButton, checked):
         if not checked:

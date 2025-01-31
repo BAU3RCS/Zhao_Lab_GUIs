@@ -15,7 +15,7 @@ def get_active_usb_serial_port():
             return port
     return None
 
-# Getting port for Prior stage
+# Getting port for Prior stage 
 try: 
     port = int(list(filter(str.isdigit, get_active_usb_serial_port()))[0])
 except TypeError: 
