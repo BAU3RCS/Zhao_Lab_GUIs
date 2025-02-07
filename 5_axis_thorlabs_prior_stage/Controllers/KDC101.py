@@ -24,7 +24,7 @@ clr.AddReference("ThorLabs.MotionControl.GenericMotorCLI")
 from Thorlabs.MotionControl.DeviceManagerCLI import * # type: ignore
 from Thorlabs.MotionControl.KCube.DCServoCLI import * # type: ignore
 # This is where the MotorDirection Enum is stored!!!
-from Thorlabs.MotionControl.GenericMotorCLI  import* # type: ignore
+from Thorlabs.MotionControl.GenericMotorCLI  import*  # type: ignore
 
 class Kcube():
     def __init__(self, serial_number, motor):
@@ -84,6 +84,14 @@ class Kcube():
             self.controller.Home(timeout)
         except Exception as error:
             sys.exit(error)
+            
+    def is_enabled(self):
+        """
+        Enables the controller to respond to commands.
+        Input: None
+        Output: Returns true if enabled and flase if disabled.
+        """
+        return self.controller.IsEnabled
         
     def enable(self):
         """
