@@ -91,7 +91,7 @@ class Kcube():
         Input: None
         Output: Returns true if enabled and flase if disabled.
         """
-        return self.controller.IsEnabled()
+        return self.controller.IsEnabled
         
     def enable(self):
         """

@@ -127,7 +127,7 @@ class M30XY():
         Input: Channel ("x", "y")
         Output: Returns true if enabled and flase if disabled.
         """
-        return self.channels[channel].IsEnabled()
+        return self.channels[channel].IsEnabled
 
     def enable(self, channel):
         """
