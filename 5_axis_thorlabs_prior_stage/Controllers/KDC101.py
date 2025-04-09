@@ -89,7 +89,7 @@ class Kcube():
         """
         Enables the controller to respond to commands.
         Input: None
-        Output: Returns true if enabled and flase if disabled.
+        Output: Returns true if enabled and false if disabled.
         """
         return self.controller.IsEnabled
         

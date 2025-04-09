@@ -4,7 +4,7 @@ Methods used to control aspects of the Main UI
 Author: Brandon Bauer
 Written January 2025
 
-Updated XXXXXXXXXXXX
+Updated March 9, 2025
 """
 
 """
@@ -42,7 +42,7 @@ class device_commands():
     Note: The x and y axis are now flipped to match the orientation of the prior stage that it is used on top of.
     """
     
-    #TODO: Might have fixed the decimal precision error with rounding. It needs to be tested
+    #Note: Might have fixed the decimal precision error with rounding. Seems to work fine for our purposes thus far
     
     # µm to mm
     um_to_mm_factor = 1e-3
@@ -51,6 +51,13 @@ class device_commands():
     mm_to_um_factor = 1e3
     
     units = "µm"
+
+    # Movement Bounds in µm
+    upper_xy_bound =  15_000
+    lower_xy_bound = -15_000
+
+    upper_z_bound  = 0
+    lower_z_bound  = 25_000
     
     def __init__(self, KDC:Kcube, M30XY:M30XY):
         """
@@ -60,6 +67,16 @@ class device_commands():
         
 #   Thorlabs
 #   region
+
+    def is_legal_move(self, move, pos, lower_bound, upper_bound):
+        return ( lower_bound <= move + pos <= upper_bound)
+
+    def show_out_of_bounds_error(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Out of Bounds")
+        msg.setText("The requested move is out of bounds for the equipment")
+        msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+        msg.exec()
 
     def show_disabled_error(self):
         msg = QMessageBox()
@@ -122,29 +139,54 @@ class device_commands():
     
 #       endregion
     
+#       Get Step size
+#       region
+    def x_get_stepsize(self):
+        return self.M30XY.get_jog_parameters("x")[0]*self.mm_to_um_factor
+
+    def y_get_stepsize(self):
+        return self.M30XY.get_jog_parameters("y")[0]*self.mm_to_um_factor
+
+    def z_get_stepsize(self):
+        return self.KDC.get_jog_parameters()[0]*self.mm_to_um_factor
+#       endregion
+
+
 #       Step Buttons
 #       region
     def x_stepped_forward(self, label:QLabel):
         if self.M30XY_is_enabled("x"):
-            label.setText(str(round(-self.M30XY.jog("x", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+            if self.is_legal_move(-self.x_get_stepsize(), self.x_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
+                label.setText(str(round(-self.M30XY.jog("x", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
          
     def x_stepped_backward(self, label:QLabel):
         if self.M30XY_is_enabled("x"):
-            label.setText(str(round(-self.M30XY.jog("x", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+            if self.is_legal_move(self.x_get_stepsize(), self.x_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
+                label.setText(str(round(-self.M30XY.jog("x", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
 
     def y_stepped_forward(self, label:QLabel):
         if self.M30XY_is_enabled("y"):
-            label.setText(str(round(-self.M30XY.jog("y", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+            if self.is_legal_move(-self.y_get_stepsize(), self.y_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
+                label.setText(str(round(-self.M30XY.jog("y", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
          
     def y_stepped_backward(self, label:QLabel):
         if self.M30XY_is_enabled("y"):
-            label.setText(str(round(-self.M30XY.jog("y", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+            if self.is_legal_move(self.y_get_stepsize(), self.y_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
+                label.setText(str(round(-self.M30XY.jog("y", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
 
@@ -153,15 +195,21 @@ class device_commands():
     """
     def z_stepped_forward(self, label:QLabel, lineedit:QLineEdit):
         if self.KDC_is_enabled():
-            self.z_set_step_size(lineedit)
-            label.setText(str(round(self.KDC.jog("Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+            if self.is_legal_move(float(lineedit.text()), self.z_get_pos(), self.lower_z_bound, self.upper_z_bound):
+                self.z_set_step_size(lineedit)
+                label.setText(str(round(self.KDC.jog("Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
          
     def z_stepped_backward(self, label:QLabel, lineedit:QLineEdit):
         if self.KDC_is_enabled():
-            self.z_set_step_size(lineedit)
-            label.setText(str(round(self.KDC.jog("Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+            if self.is_legal_move(-float(lineedit.text()), self.z_get_pos(), self.lower_z_bound, self.upper_z_bound):
+                self.z_set_step_size(lineedit)
+                label.setText(str(round(self.KDC.jog("Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
             
@@ -171,22 +219,31 @@ class device_commands():
 #       region
     def x_move_to(self, lineedit:QLineEdit, label:QLabel):
         if self.M30XY_is_enabled("x"):
-            new_pos = -self.M30XY.move_to("x", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
-            label.setText(str(round(new_pos, 3))+" "+self.units)
+            if self.is_legal_move(-float(lineedit.text()), 0, self.lower_xy_bound, self.upper_xy_bound):
+                new_pos = -self.M30XY.move_to("x", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+                label.setText(str(round(new_pos, 3))+" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
     
     def y_move_to(self, lineedit:QLineEdit, label:QLabel):
         if self.M30XY_is_enabled("y"):
-            new_pos = -self.M30XY.move_to("y", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
-            label.setText(str(round(new_pos, 3))+" "+self.units)
+            if self.is_legal_move(-float(lineedit.text()), 0, self.lower_xy_bound, self.upper_xy_bound):
+                new_pos = -self.M30XY.move_to("y", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+                label.setText(str(round(new_pos, 3))+" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
         
     def z_move_to(self, lineedit:QLineEdit, label:QLabel):
         if self.KDC_is_enabled():
-            new_pos = self.KDC.move_to(float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
-            label.setText(str(round(new_pos, 3))+" "+self.units)
+            if  self.is_legal_move(-float(lineedit.text()), 0, self.lower_z_bound, self.upper_z_bound):
+                new_pos = self.KDC.move_to(float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+                label.setText(str(round(new_pos, 3))+" "+self.units)
+            else:
+                self.show_out_of_bounds_error()
         else:
             self.show_disabled_error()
 
