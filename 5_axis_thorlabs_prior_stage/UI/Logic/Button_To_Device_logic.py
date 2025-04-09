@@ -121,13 +121,13 @@ class device_commands():
 #       region
     def x_set_step_size(self, lineedit:QLineEdit):
         if self.M30XY_is_enabled("x"):
-            self.M30XY.set_jog_velocity_params("x", step_size = float(lineedit.text()) * self.um_to_mm_factor)
+            self.M30XY.set_jog_velocity_parameters("x", step_size = float(lineedit.text()) * self.um_to_mm_factor)
         else:
             self.show_disabled_error()
     
     def y_set_step_size(self, lineedit:QLineEdit):
         if self.M30XY_is_enabled("y"):
-            self.M30XY.set_jog_velocity_params("y", step_size = float(lineedit.text()) * self.um_to_mm_factor)
+            self.M30XY.set_jog_velocity_parameters("y", step_size = float(lineedit.text()) * self.um_to_mm_factor)
         else:
             self.show_disabled_error()
         
@@ -135,7 +135,7 @@ class device_commands():
     This is now just a helper function for the step buttons in 
     """
     def z_set_step_size(self, lineedit:QLineEdit):
-        self.KDC.set_jog_velocity_params(step_size = float(lineedit.text()) * self.um_to_mm_factor)
+        self.KDC.set_jog_velocity_parameters(step_size = float(lineedit.text()) * self.um_to_mm_factor)
     
 #       endregion
     
