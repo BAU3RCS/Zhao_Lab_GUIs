@@ -56,8 +56,8 @@ class device_commands():
     upper_xy_bound =  15_000
     lower_xy_bound = -15_000
 
-    upper_z_bound  = 0
-    lower_z_bound  = 25_000
+    upper_z_bound  = 25_000
+    lower_z_bound  = 0
     
     def __init__(self, KDC:Kcube, M30XY:M30XY):
         """
