@@ -239,7 +239,7 @@ class device_commands():
         
     def z_move_to(self, lineedit:QLineEdit, label:QLabel):
         if self.KDC_is_enabled():
-            if  self.is_legal_move(-float(lineedit.text()), 0, self.lower_z_bound, self.upper_z_bound):
+            if  self.is_legal_move(float(lineedit.text()), 0, self.lower_z_bound, self.upper_z_bound):
                 new_pos = self.KDC.move_to(float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
                 label.setText(str(round(new_pos, 3))+" "+self.units)
             else:
