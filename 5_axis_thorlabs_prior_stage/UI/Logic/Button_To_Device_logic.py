@@ -142,13 +142,13 @@ class device_commands():
 #       Get Step size
 #       region
     def x_get_stepsize(self):
-        return self.M30XY.get_jog_parameters("x")[0]*self.mm_to_um_factor
+        return self.M30XY.get_jog_params("x")[0]*self.mm_to_um_factor
 
     def y_get_stepsize(self):
-        return self.M30XY.get_jog_parameters("y")[0]*self.mm_to_um_factor
+        return self.M30XY.get_jog_params("y")[0]*self.mm_to_um_factor
 
     def z_get_stepsize(self):
-        return self.KDC.get_jog_parameters()[0]*self.mm_to_um_factor
+        return self.KDC.get_jog_params()[0]*self.mm_to_um_factor
 #       endregion
 
 
