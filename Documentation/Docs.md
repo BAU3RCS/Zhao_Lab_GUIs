@@ -7,7 +7,7 @@ This is folder is where you can find the API documentation for hardware used in 
 <H2> Current GUIs </H2>
 
  - [5 Axis Stage GUI](/5_axis_thorlabs_prior_stage/)
-    - Currently to use this program you need to clone the repo, create a python virtual environment, install the required [Python packages](/Documentation/requirements.txt), navigate in command line (with the virtual environment active) to where <code>Main.py</code> is [located](/5_axis_thorlabs_prior_stage/) under <code>5_axis_thorlabs_prior_stage</code> folder, and run <code>python Main.py</code>. This should run the program. **NOTE: To run the program without it throwing an error, you must have all stages and components plugged into the computer and turned on.**
+    - Currently to use this program you need to clone the repo and simply double click on the [Start_5_Axis.bat](/Start_5_Axis.bat) located in the root directory. You can also go through the following process manually: create a python virtual environment, install the required [Python packages](/Documentation/requirements.txt), navigate in command line (with the virtual environment active) to where <code>Main.py</code> is [located](/5_axis_thorlabs_prior_stage/) under <code>5_axis_thorlabs_prior_stage</code> folder, and run <code>python Main.py</code>. This should run the program. **NOTE: To run the program without it throwing an error, you must have all stages and components plugged into the computer and turned on.**
     - [Project TODOS listed here](/TODO.md)
 
 <H2> Links </H2>
