@@ -4,10 +4,7 @@
     - Check position decimals are properly rounded off in thorlabs GUI
     - Check the disabled button behavoir works properly with popup
 
-    - Write out of bounds handling for thorlabs
-    - Write bash file that will launch the controll software and determine repo location for it
     - Add Units to Prior GUI
-    - give more descript errors to the user
     - Might need to change how com ports are loaded
     - Might reorganize prior stuff into gui, logic, etc
 

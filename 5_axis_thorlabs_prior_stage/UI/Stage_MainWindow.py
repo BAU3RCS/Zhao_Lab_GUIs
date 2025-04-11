@@ -4,7 +4,7 @@ Main Stage Control GUI Window
 Author: Brandon Bauer and Musarate Shams
 Written January 2025
 
-Updated XXXXXXXXXXXX
+Updated March 9, 2025
 """
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -95,7 +95,7 @@ class Stage_MainWindow(QMainWindow):
         self.title_row.append(QLabel("Step"))
         self.title_row.append(QLabel("Move To"))
         
-        # subtracting one here to allow me to stretch the last titlte across 2 columns
+        # subtracting one here to allow me to stretch the last title across 2 columns
         for i in range(len(self.title_row)-1):
             self.title_row[i].setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.title_row[i].setMaximumHeight(self.max_height_title_bar)
@@ -326,7 +326,9 @@ class Stage_MainWindow(QMainWindow):
         self.button_row[1].clicked.connect(lambda: self.commands.home_all(self.button_row[1], self.x_row[1], self.y_row[1], self.z_row[1]))
             
         self.thorlabs_layout.addWidget(self.button_row[0], 4, 0, 1, 3)
-        self.thorlabs_layout.addWidget(self.button_row[1], 4, 3, 1, 3)
+
+        #TODO Need to move this button such that it is not likely to hit when hitting +/-Z
+        self.thorlabs_layout.addWidget(self.button_row[1], 4, 4, 1, 2)
         
         #           endregion
         
