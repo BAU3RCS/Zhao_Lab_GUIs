@@ -147,9 +147,9 @@ class Stage_MainWindow(QMainWindow):
         self.x_stepbuttons.addWidget(self.x_step_left)
         self.x_stepbuttons.addWidget(self.x_step_right)
         
-        self.x_step_left.clicked.connect( lambda: self.commands.x_stepped_backward(self.x_row[1]))
-        self.x_step_right.clicked.connect(lambda: self.commands. x_stepped_forward(self.x_row[1]))
-        
+        self.x_step_left.clicked.connect( lambda: self.commands. x_stepped_forward(self.x_row[1]))
+        self.x_step_right.clicked.connect(lambda: self.commands.x_stepped_backward(self.x_row[1]))
+
         self.x_row.append(self.x_stepbuttons)
         
         self.x_row.append(CustomLineEdit(self.units))
