@@ -156,8 +156,8 @@ class device_commands():
 #       region
     def x_stepped_forward(self, label:QLabel):
         if self.M30XY_is_enabled("x"):
-            if self.is_legal_move(-self.x_get_stepsize(), self.x_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
-                label.setText(str(round(-self.M30XY.jog("x", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+            if self.is_legal_move(self.x_get_stepsize(), self.x_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
+                label.setText(str(round(self.M30XY.jog("x", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
             else:
                 self.show_out_of_bounds_error()
         else:
@@ -166,7 +166,7 @@ class device_commands():
     def x_stepped_backward(self, label:QLabel):
         if self.M30XY_is_enabled("x"):
             if self.is_legal_move(self.x_get_stepsize(), self.x_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
-                label.setText(str(round(-self.M30XY.jog("x", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+                label.setText(str(round(self.M30XY.jog("x", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
             else:
                 self.show_out_of_bounds_error()
         else:
@@ -174,8 +174,8 @@ class device_commands():
 
     def y_stepped_forward(self, label:QLabel):
         if self.M30XY_is_enabled("y"):
-            if self.is_legal_move(self.y_get_stepsize(), self.y_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
-                label.setText(str(round(self.M30XY.jog("y", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
+            if self.is_legal_move(-self.y_get_stepsize(), self.y_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
+                label.setText(str(round(-self.M30XY.jog("y", "Backward", self.minute)*self.mm_to_um_factor, 3))+" "+self.units)
             else:
                 self.show_out_of_bounds_error()
         else:
@@ -184,7 +184,7 @@ class device_commands():
     def y_stepped_backward(self, label:QLabel):
         if self.M30XY_is_enabled("y"):
             if self.is_legal_move(self.y_get_stepsize(), self.y_get_pos(), self.lower_xy_bound, self.upper_xy_bound):
-                label.setText(str(round(self.M30XY.jog("y", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
+                label.setText(str(round(-self.M30XY.jog("y", "Forward", self.minute)*self.mm_to_um_factor, 3)) +" "+self.units)
             else:
                 self.show_out_of_bounds_error()
         else:
@@ -219,8 +219,8 @@ class device_commands():
 #       region
     def x_move_to(self, lineedit:QLineEdit, label:QLabel):
         if self.M30XY_is_enabled("x"):
-            if self.is_legal_move(-float(lineedit.text()), 0, self.lower_xy_bound, self.upper_xy_bound):
-                new_pos = -self.M30XY.move_to("x", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+            if self.is_legal_move(float(lineedit.text()), 0, self.lower_xy_bound, self.upper_xy_bound):
+                new_pos = self.M30XY.move_to("x", float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
                 label.setText(str(round(new_pos, 3))+" "+self.units)
             else:
                 self.show_out_of_bounds_error()
@@ -229,8 +229,8 @@ class device_commands():
     
     def y_move_to(self, lineedit:QLineEdit, label:QLabel):
         if self.M30XY_is_enabled("y"):
-            if self.is_legal_move(float(lineedit.text()), 0, self.lower_xy_bound, self.upper_xy_bound):
-                new_pos = self.M30XY.move_to("y", float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
+            if self.is_legal_move(-float(lineedit.text()), 0, self.lower_xy_bound, self.upper_xy_bound):
+                new_pos = -self.M30XY.move_to("y", -float(lineedit.text()) * self.um_to_mm_factor, self.minute) * self.mm_to_um_factor
                 label.setText(str(round(new_pos, 3))+" "+self.units)
             else:
                 self.show_out_of_bounds_error()
