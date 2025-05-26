@@ -112,7 +112,15 @@ class Stage_MainWindow(QMainWindow):
         #           region
         self.x_row        = []
         
-        self.x_row.append(QLabel("X:"))
+        #NOTE: X and Y axis are now swapped as such since the stage is rotated 90 degrees CW
+        #NOTE: Swapped labels and place in layout
+        #NOTE: OG  -> Now
+        #NOTE: -x  -> +y
+        #NOTE: +x  -> -y 
+        #NOTE: +y  -> +x
+        #NOTE: -y  -> -x
+
+        self.x_row.append(QLabel("Y:"))
         self.x_row[0].setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.x_row[0].setMinimumWidth(self.min_axis_width)
         
@@ -130,8 +138,8 @@ class Stage_MainWindow(QMainWindow):
         self.x_row[2].editingFinished.connect(lambda: self.commands.x_set_step_size(self.x_row[2]))
         
         self.x_stepbuttons = QHBoxLayout()
-        self.x_step_left   = QPushButton("- X",self)
-        self.x_step_right  = QPushButton("+ X",self)
+        self.x_step_left   = QPushButton("- Y",self)
+        self.x_step_right  = QPushButton("+ Y",self)
         self.x_step_right.setMinimumHeight(self.min_button_height)
         self.x_step_right.setMinimumWidth(self.min_step_button_width)
         self.x_step_left.setMinimumHeight(self.min_button_height)
@@ -139,9 +147,9 @@ class Stage_MainWindow(QMainWindow):
         self.x_stepbuttons.addWidget(self.x_step_left)
         self.x_stepbuttons.addWidget(self.x_step_right)
         
-        self.x_step_left.clicked.connect( lambda: self.commands.x_stepped_backward(self.x_row[1]))
-        self.x_step_right.clicked.connect(lambda: self.commands. x_stepped_forward(self.x_row[1]))
-        
+        self.x_step_left.clicked.connect( lambda: self.commands. x_stepped_forward(self.x_row[1]))
+        self.x_step_right.clicked.connect(lambda: self.commands.x_stepped_backward(self.x_row[1]))
+
         self.x_row.append(self.x_stepbuttons)
         
         self.x_row.append(CustomLineEdit(self.units))
@@ -157,9 +165,9 @@ class Stage_MainWindow(QMainWindow):
         
         for i in range(len(self.x_row)):
             if i == 3:
-                self.thorlabs_layout.addLayout(self.x_row[i], 1, i)
+                self.thorlabs_layout.addLayout(self.x_row[i], 2, i)
             else:
-                self.thorlabs_layout.addWidget(self.x_row[i], 1, i)
+                self.thorlabs_layout.addWidget(self.x_row[i], 2, i)
         
         # Widgets
         
@@ -170,7 +178,7 @@ class Stage_MainWindow(QMainWindow):
         #           region
         self.y_row         = []
         
-        self.y_row.append(QLabel("Y:"))
+        self.y_row.append(QLabel("X:"))
         self.y_row[0].setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.y_row[0].setMinimumWidth(self.min_axis_width)
         
@@ -188,8 +196,8 @@ class Stage_MainWindow(QMainWindow):
         self.y_row[2].editingFinished.connect(lambda: self.commands.y_set_step_size(self.y_row[2]))
         
         self.y_stepbuttons = QHBoxLayout()
-        self.y_step_left   = QPushButton("- Y",self)
-        self.y_step_right  = QPushButton("+ Y",self)
+        self.y_step_left   = QPushButton("- X",self)
+        self.y_step_right  = QPushButton("+ X",self)
         self.y_step_right.setMinimumHeight(self.min_button_height)
         self.y_step_right.setMinimumWidth(self.min_step_button_width)
         self.y_step_left.setMinimumHeight(self.min_button_height)
@@ -216,9 +224,9 @@ class Stage_MainWindow(QMainWindow):
     
         for i in range(len(self.y_row)):
             if i ==3:
-                self.thorlabs_layout.addLayout(self.y_row[i], 2, i)
+                self.thorlabs_layout.addLayout(self.y_row[i], 1, i)
             else:
-                self.thorlabs_layout.addWidget(self.y_row[i], 2, i)
+                self.thorlabs_layout.addWidget(self.y_row[i], 1, i)
         #           endregion
 
         #           z-axis row 3
